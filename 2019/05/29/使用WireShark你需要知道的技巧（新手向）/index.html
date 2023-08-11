@@ -1,16 +1,17 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>使用WireShark你需要知道的技巧（新手向） | 邹志浩的博客</title><meta name="author" content="邹志浩"><meta name="copyright" content="邹志浩"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前一阵子要给实验室的学弟们技术分享，当时收到建议给他们普及一些计算机网络的知识，可是关有理论知识讲课肯定不够吸引人，于是便一边学习Wireshark一边做PPT一边写讲稿。忙碌了两个星期后，分享会后还是得到了不错的的评价😁，我也在博客中总结下一些使用技巧，内容主要面向新手  WireShark的用途用途一： 学习网络知识，提供实际操作在我大二学习计算机网络的时候，老师上课只负责书本的讲解，导致">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>使用WireShark你需要知道的技巧（新手向） | Zexho</title><meta name="author" content="邹志浩,zouzhihao994@gmail.com"><meta name="copyright" content="邹志浩"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前一阵子要给实验室的学弟们技术分享，当时收到建议给他们普及一些计算机网络的知识，可是关有理论知识讲课肯定不够吸引人，于是便一边学习Wireshark一边做PPT一边写讲稿。忙碌了两个星期后，分享会后还是得到了不错的的评价😁，我也在博客中总结下一些使用技巧，内容主要面向新手  WireShark的用途用途一： 学习网络知识，提供实际操作在我大二学习计算机网络的时候，老师上课只负责书本的讲解，导致">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用WireShark你需要知道的技巧（新手向）">
 <meta property="og:url" content="https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/index.html">
-<meta property="og:site_name" content="邹志浩的博客">
+<meta property="og:site_name" content="Zexho">
 <meta property="og:description" content="前一阵子要给实验室的学弟们技术分享，当时收到建议给他们普及一些计算机网络的知识，可是关有理论知识讲课肯定不够吸引人，于是便一边学习Wireshark一边做PPT一边写讲稿。忙碌了两个星期后，分享会后还是得到了不错的的评价😁，我也在博客中总结下一些使用技巧，内容主要面向新手  WireShark的用途用途一： 学习网络知识，提供实际操作在我大二学习计算机网络的时候，老师上课只负责书本的讲解，导致">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://p.ipic.vip/nkaktf.jpg">
 <meta property="article:published_time" content="2019-05-29T01:57:21.000Z">
 <meta property="article:modified_time" content="2023-08-10T16:59:01.037Z">
 <meta property="article:author" content="邹志浩">
+<meta property="article:tag" content="技术,Java,博客">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://p.ipic.vip/nkaktf.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+<meta name="twitter:image" content="https://p.ipic.vip/nkaktf.jpg"><link rel="shortcut icon" href="https://p.ipic.vip/nkaktf.jpg"><link rel="canonical" href="https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
   root: '/',
   algolia: undefined,
   localSearch: undefined,
@@ -26,7 +27,7 @@
     homepage: false,
     post: false
   },
-  runtime: '',
+  runtime: '天',
   dateSuffix: {
     just: '刚刚',
     min: '分钟前',
@@ -34,7 +35,7 @@
     day: '天前',
     month: '个月前'
   },
-  copyright: undefined,
+  copyright: {"limitCount":20,"languages":{"author":"作者: 邹志浩","link":"链接: ","source":"来源: Zexho","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
   lightbox: 'fancybox',
   Snackbar: undefined,
   source: {
@@ -48,7 +49,7 @@
   isAnchor: false,
   percent: {
     toc: true,
-    rightside: false,
+    rightside: true,
   },
   autoDarkmode: false
 }</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
@@ -161,7 +162,28 @@
       }
     }
     detectApple()
-    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="邹志浩的博客"><img class="site-icon" src="https://p.ipic.vip/nkaktf.jpg"/><span class="site-name">邹志浩的博客</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">使用WireShark你需要知道的技巧（新手向）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-05-29T01:57:21.000Z" title="发表于 2019-05-29 09:57:21">2019-05-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-08-10T16:59:01.037Z" title="更新于 2023-08-11 00:59:01">2023-08-11</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="使用WireShark你需要知道的技巧（新手向）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="post-content" id="article-container"><blockquote>
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load',() => { preloader.endLoading() })
+
+  if (true) {
+    document.addEventListener('pjax:send', () => { preloader.initLoading() })
+    document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Zexho"><img class="site-icon" src="https://p.ipic.vip/nkaktf.jpg"/><span class="site-name">Zexho</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">使用WireShark你需要知道的技巧（新手向）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2019-05-29T01:57:21.000Z" title="发表于 2019-05-29 09:57:21">2019-05-29</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">937</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>2分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="使用WireShark你需要知道的技巧（新手向）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
 <p>前一阵子要给实验室的学弟们技术分享，当时收到建议给他们普及一些计算机网络的知识，可是关<br>有理论知识讲课肯定不够吸引人，于是便一边学习Wireshark一边做PPT一边写讲稿。忙碌了两个星期后，分享会后还是得到了不错的的评价😁，我也在博客中总结下一些使用技巧，内容主要面向新手</p>
 </blockquote>
 <h2 id="WireShark的用途"><a href="#WireShark的用途" class="headerlink" title="WireShark的用途"></a>WireShark的用途</h2><h3 id="用途一：-学习网络知识，提供实际操作"><a href="#用途一：-学习网络知识，提供实际操作" class="headerlink" title="用途一： 学习网络知识，提供实际操作"></a>用途一： 学习网络知识，提供实际操作</h3><p>在我大二学习计算机网络的时候，老师上课只负责书本的讲解，导致我产生了计算机网络很无聊的错觉，所以那时候也没太认真的学习这门课程。但是后来当我自己边抓包边温习计网知识的时候，才发现是如此的有趣。而在抓包工具中，我使用过小花瓶（charles）和小鲨鱼（wireshark），我推荐小鲨鱼。</p>
@@ -193,7 +215,7 @@
 <h3 id="先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～"><a href="#先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～" class="headerlink" title="先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～"></a>先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～</h3><blockquote>
 <p>如果哪里有错误，还恳请大家指出。</p>
 </blockquote>
-</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zexho994.github.io">邹志浩</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/">https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zexho994.github.io" target="_blank">邹志浩的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://p.ipic.vip/nkaktf.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2019/05/30/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%20%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88%20%E8%BF%9E%E9%80%9A%E6%95%B0%E6%8D%AE/" title="微信小程序 本地预览 连通数据"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">微信小程序 本地预览 连通数据</div></div></a></div><div class="next-post pull-right"><a href="/2019/05/28/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8FPOST%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/" title="微信小程序POST数据传输"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">微信小程序POST数据传输</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹志浩</div><div class="author-info__description">芝兰生于幽谷,不因无人而不芳</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/zexho994" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:zouzhihao994@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#WireShark%E7%9A%84%E7%94%A8%E9%80%94"><span class="toc-number">1.</span> <span class="toc-text">WireShark的用途</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E9%80%94%E4%B8%80%EF%BC%9A-%E5%AD%A6%E4%B9%A0%E7%BD%91%E7%BB%9C%E7%9F%A5%E8%AF%86%EF%BC%8C%E6%8F%90%E4%BE%9B%E5%AE%9E%E9%99%85%E6%93%8D%E4%BD%9C"><span class="toc-number">1.1.</span> <span class="toc-text">用途一： 学习网络知识，提供实际操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E9%80%94%E4%BA%8C%EF%BC%9A-%E8%8E%B7%E5%8F%96%E7%BD%91%E7%BB%9C%E8%B5%84%E6%BA%90%E4%BF%A1%E6%81%AF"><span class="toc-number">1.2.</span> <span class="toc-text">用途二： 获取网络资源信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E9%80%94%E4%B8%89%EF%BC%9A%E8%BF%9B%E8%A1%8C%E7%BD%91%E7%BB%9C%E7%8A%B6%E5%86%B5%E5%88%86%E6%9E%90"><span class="toc-number">1.3.</span> <span class="toc-text">用途三：进行网络状况分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%93%E5%8C%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">抓包前的准备工作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BF%AE%E6%94%B9%E7%9D%80%E8%89%B2%E8%A7%84%E5%88%99"><span class="toc-number">2.1.</span> <span class="toc-text">1. 修改着色规则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%EF%BC%89%EF%BC%9A-%E6%89%93%E5%BC%80%E8%A7%86%E5%9B%BE%E9%80%89%E9%A1%B9%EF%BC%8C%E6%89%BE%E5%88%B0%E7%9D%80%E8%89%B2%E8%A7%84%E5%88%99%EF%BC%8C%E5%B0%B1%E5%83%8F"><span class="toc-number">2.1.1.</span> <span class="toc-text">1）： 打开视图选项，找到着色规则，就像</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%EF%BC%89%EF%BC%9A-%E4%BF%AE%E6%94%B9%E8%83%8C%E6%99%AF%E9%85%8D%E8%89%B2"><span class="toc-number">2.1.2.</span> <span class="toc-text">2）： 修改背景配色</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8F%AA%E6%8A%93%E5%8C%85%E5%A4%B4"><span class="toc-number">2.2.</span> <span class="toc-text">2. 只抓包头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E8%AE%A4%E8%AF%86%E4%B8%8B%E5%88%86%E5%B1%82"><span class="toc-number">2.3.</span> <span class="toc-text">3. 认识下分层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%95%B0%E6%8D%AE%E8%BF%87%E6%BB%A4%E6%8A%80%E5%B7%A7"><span class="toc-number">2.4.</span> <span class="toc-text">4. 数据过滤技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%EF%BC%89%E5%8D%8F%E8%AE%AE%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.1.</span> <span class="toc-text">1）协议过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%EF%BC%89-%E7%AB%AF%E5%8F%A3%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.2.</span> <span class="toc-text">2） 端口过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%EF%BC%89Ip%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.3.</span> <span class="toc-text">3）Ip过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%EF%BC%89%E6%A0%87%E8%AF%86%E7%AC%A6%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.4.</span> <span class="toc-text">4）标识符过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5%EF%BC%89%E9%95%BF%E5%BA%A6%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.5.</span> <span class="toc-text">5）长度过滤</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%88%E5%88%86%E4%BA%AB%E5%88%B0%E8%BF%99%E9%87%8C%EF%BC%8C%E8%BF%99%E5%87%A0%E5%A4%A9%E5%9C%A8%E5%BF%99%E7%9D%80%E5%86%99%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%8C%E8%BF%87%E5%87%A0%E5%A4%A9%E9%80%9A%E8%BF%87wireshark%E5%88%86%E6%9E%90%E4%B8%8Btcp3%E6%AC%A1%E6%8F%A1%E6%89%8B%E5%92%8C4%E6%AC%A1%E6%8C%A5%E6%89%8B%E6%9D%A5%E5%AE%9E%E6%88%98%E6%93%8D%E4%BD%9C%E4%B8%8B%EF%BD%9E"><span class="toc-number">2.5.</span> <span class="toc-text">先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/05/30/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%20%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88%20%E8%BF%9E%E9%80%9A%E6%95%B0%E6%8D%AE/" title="微信小程序 本地预览 连通数据">微信小程序 本地预览 连通数据</a><time datetime="2019-05-30T11:37:46.000Z" title="发表于 2019-05-30 19:37:46">2019-05-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/" title="使用WireShark你需要知道的技巧（新手向）">使用WireShark你需要知道的技巧（新手向）</a><time datetime="2019-05-29T01:57:21.000Z" title="发表于 2019-05-29 09:57:21">2019-05-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/05/28/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8FPOST%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/" title="微信小程序POST数据传输">微信小程序POST数据传输</a><time datetime="2019-05-28T04:17:25.000Z" title="发表于 2019-05-28 12:17:25">2019-05-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By 邹志浩</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zexho994.github.io">邹志浩</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/">https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zexho994.github.io" target="_blank">Zexho</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://p.ipic.vip/nkaktf.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2019/05/30/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%20%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88%20%E8%BF%9E%E9%80%9A%E6%95%B0%E6%8D%AE/" title="微信小程序 本地预览 连通数据"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">微信小程序 本地预览 连通数据</div></div></a></div><div class="next-post pull-right"><a href="/2019/05/28/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8FPOST%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/" title="微信小程序POST数据传输"><img class="cover" src="https://p.ipic.vip/2brjzg.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">微信小程序POST数据传输</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹志浩</div><div class="author-info__description">芝兰生于幽谷,不因无人而不芳</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/zexho994" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:zouzhihao994@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#WireShark%E7%9A%84%E7%94%A8%E9%80%94"><span class="toc-number">1.</span> <span class="toc-text">WireShark的用途</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E9%80%94%E4%B8%80%EF%BC%9A-%E5%AD%A6%E4%B9%A0%E7%BD%91%E7%BB%9C%E7%9F%A5%E8%AF%86%EF%BC%8C%E6%8F%90%E4%BE%9B%E5%AE%9E%E9%99%85%E6%93%8D%E4%BD%9C"><span class="toc-number">1.1.</span> <span class="toc-text">用途一： 学习网络知识，提供实际操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E9%80%94%E4%BA%8C%EF%BC%9A-%E8%8E%B7%E5%8F%96%E7%BD%91%E7%BB%9C%E8%B5%84%E6%BA%90%E4%BF%A1%E6%81%AF"><span class="toc-number">1.2.</span> <span class="toc-text">用途二： 获取网络资源信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E9%80%94%E4%B8%89%EF%BC%9A%E8%BF%9B%E8%A1%8C%E7%BD%91%E7%BB%9C%E7%8A%B6%E5%86%B5%E5%88%86%E6%9E%90"><span class="toc-number">1.3.</span> <span class="toc-text">用途三：进行网络状况分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%93%E5%8C%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">抓包前的准备工作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BF%AE%E6%94%B9%E7%9D%80%E8%89%B2%E8%A7%84%E5%88%99"><span class="toc-number">2.1.</span> <span class="toc-text">1. 修改着色规则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%EF%BC%89%EF%BC%9A-%E6%89%93%E5%BC%80%E8%A7%86%E5%9B%BE%E9%80%89%E9%A1%B9%EF%BC%8C%E6%89%BE%E5%88%B0%E7%9D%80%E8%89%B2%E8%A7%84%E5%88%99%EF%BC%8C%E5%B0%B1%E5%83%8F"><span class="toc-number">2.1.1.</span> <span class="toc-text">1）： 打开视图选项，找到着色规则，就像</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%EF%BC%89%EF%BC%9A-%E4%BF%AE%E6%94%B9%E8%83%8C%E6%99%AF%E9%85%8D%E8%89%B2"><span class="toc-number">2.1.2.</span> <span class="toc-text">2）： 修改背景配色</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8F%AA%E6%8A%93%E5%8C%85%E5%A4%B4"><span class="toc-number">2.2.</span> <span class="toc-text">2. 只抓包头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E8%AE%A4%E8%AF%86%E4%B8%8B%E5%88%86%E5%B1%82"><span class="toc-number">2.3.</span> <span class="toc-text">3. 认识下分层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%95%B0%E6%8D%AE%E8%BF%87%E6%BB%A4%E6%8A%80%E5%B7%A7"><span class="toc-number">2.4.</span> <span class="toc-text">4. 数据过滤技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%EF%BC%89%E5%8D%8F%E8%AE%AE%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.1.</span> <span class="toc-text">1）协议过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%EF%BC%89-%E7%AB%AF%E5%8F%A3%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.2.</span> <span class="toc-text">2） 端口过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%EF%BC%89Ip%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.3.</span> <span class="toc-text">3）Ip过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%EF%BC%89%E6%A0%87%E8%AF%86%E7%AC%A6%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.4.</span> <span class="toc-text">4）标识符过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5%EF%BC%89%E9%95%BF%E5%BA%A6%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.5.</span> <span class="toc-text">5）长度过滤</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%88%E5%88%86%E4%BA%AB%E5%88%B0%E8%BF%99%E9%87%8C%EF%BC%8C%E8%BF%99%E5%87%A0%E5%A4%A9%E5%9C%A8%E5%BF%99%E7%9D%80%E5%86%99%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%8C%E8%BF%87%E5%87%A0%E5%A4%A9%E9%80%9A%E8%BF%87wireshark%E5%88%86%E6%9E%90%E4%B8%8Btcp3%E6%AC%A1%E6%8F%A1%E6%89%8B%E5%92%8C4%E6%AC%A1%E6%8C%A5%E6%89%8B%E6%9D%A5%E5%AE%9E%E6%88%98%E6%93%8D%E4%BD%9C%E4%B8%8B%EF%BD%9E"><span class="toc-number">2.5.</span> <span class="toc-text">先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/05/30/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%20%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88%20%E8%BF%9E%E9%80%9A%E6%95%B0%E6%8D%AE/" title="微信小程序 本地预览 连通数据">微信小程序 本地预览 连通数据</a><time datetime="2019-05-30T11:37:46.000Z" title="发表于 2019-05-30 19:37:46">2019-05-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/" title="使用WireShark你需要知道的技巧（新手向）">使用WireShark你需要知道的技巧（新手向）</a><time datetime="2019-05-29T01:57:21.000Z" title="发表于 2019-05-29 09:57:21">2019-05-29</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2019/05/28/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8FPOST%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/" title="微信小程序POST数据传输"><img src="https://p.ipic.vip/2brjzg.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="微信小程序POST数据传输"/></a><div class="content"><a class="title" href="/2019/05/28/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8FPOST%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/" title="微信小程序POST数据传输">微信小程序POST数据传输</a><time datetime="2019-05-28T04:17:25.000Z" title="发表于 2019-05-28 12:17:25">2019-05-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2023 By 邹志浩</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
   function initGitalk () {
     var gitalk = new Gitalk(Object.assign({
       clientID: '795b5e8cc9f220c0abd0',
@@ -229,4 +251,173 @@ if ('Gitalk' === 'Gitalk' || !true) {
   function loadOtherComment () {
     loadGitalk()
   }
-}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
+}</script></div><script>window.addEventListener('load', () => {
+  const changeContent = (content) => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g,"") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0,150) + '...'
+    }
+    return content
+  }
+
+  const findTrueUrl = (array) => {
+    Promise.all(array.map(item =>
+      fetch(item.url).then(resp => resp.json()).then(data => {
+        const urlArray = data.body.match(/(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?/ig)
+        if (data.user.login === 'utterances-bot') {
+          return urlArray.pop()
+        } else {
+          return urlArray.shift()
+        }
+      })
+    )).then(res => {
+        array = array.map((i,index)=> {
+          return {
+            ...i,
+            url: res[index]
+          }
+        })
+
+        saveToLocal.set('github-newest-comments', JSON.stringify(array), 10/(60*24))
+        generateHtml(array)
+    });
+  }
+
+  const getComment = () => {
+    fetch('https://api.github.com/repos/zexho994/zexho994.github.io/issues/comments?sort=updated&direction=desc&per_page=5&page=1',{
+      "headers": {
+        Accept: 'application/vnd.github.v3.html+json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        const githubArray = data.map(item => {
+          return {
+            'avatar': item.user.avatar_url,
+            'content': changeContent(item.body_html),
+            'nick': item.user.login,
+            'url': item.issue_url,
+            'date': item.updated_at,
+            'githubUrl': item.html_url
+          }
+        })
+        findTrueUrl(githubArray)
+      }).catch(e => {
+        const $dom = document.querySelector('#card-newest-comments .aside-list')
+        $dom.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+  }
+
+  const generateHtml = array => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class=\'aside-list-item\'>'
+
+        if (true) {
+          const name = 'src'
+          result += `<a href='${array[i].url}' class='thumbnail'><img ${name}='${array[i].avatar}' alt='${array[i].nick}'></a>`
+        }
+
+        result += `<div class='content'>
+        <a class='comment' href='${array[i].url}' title='${array[i].content}'>${array[i].content}</a>
+        <div class='name'><span>${array[i].nick} / </span><time datetime="${array[i].date}">${btf.diffDate(array[i].date, true)}</time></div>
+        </div></div>`
+      }
+    } else {
+      result += '没有评论'
+    }
+
+    let $dom = document.querySelector('#card-newest-comments .aside-list')
+    $dom.innerHTML= result
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh($dom)
+  }
+
+  const newestCommentInit = () => {
+    if (document.querySelector('#card-newest-comments .aside-list')) {
+      const data = saveToLocal.get('github-newest-comments')
+      if (data) {
+        generateHtml(JSON.parse(data))
+      } else {
+        getComment()
+      }
+    }
+  }
+
+  newestCommentInit()
+  document.addEventListener('pjax:complete', newestCommentInit)
+})</script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
