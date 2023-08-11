@@ -1,0 +1,232 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>使用WireShark你需要知道的技巧（新手向） | 邹志浩的博客</title><meta name="author" content="邹志浩"><meta name="copyright" content="邹志浩"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="前一阵子要给实验室的学弟们技术分享，当时收到建议给他们普及一些计算机网络的知识，可是关有理论知识讲课肯定不够吸引人，于是便一边学习Wireshark一边做PPT一边写讲稿。忙碌了两个星期后，分享会后还是得到了不错的的评价😁，我也在博客中总结下一些使用技巧，内容主要面向新手  WireShark的用途用途一： 学习网络知识，提供实际操作在我大二学习计算机网络的时候，老师上课只负责书本的讲解，导致">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用WireShark你需要知道的技巧（新手向）">
+<meta property="og:url" content="https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/index.html">
+<meta property="og:site_name" content="邹志浩的博客">
+<meta property="og:description" content="前一阵子要给实验室的学弟们技术分享，当时收到建议给他们普及一些计算机网络的知识，可是关有理论知识讲课肯定不够吸引人，于是便一边学习Wireshark一边做PPT一边写讲稿。忙碌了两个星期后，分享会后还是得到了不错的的评价😁，我也在博客中总结下一些使用技巧，内容主要面向新手  WireShark的用途用途一： 学习网络知识，提供实际操作在我大二学习计算机网络的时候，老师上课只负责书本的讲解，导致">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p.ipic.vip/nkaktf.jpg">
+<meta property="article:published_time" content="2019-05-29T01:57:21.000Z">
+<meta property="article:modified_time" content="2023-08-10T16:59:01.037Z">
+<meta property="article:author" content="邹志浩">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p.ipic.vip/nkaktf.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '使用WireShark你需要知道的技巧（新手向）',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-08-11 00:59:01'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="邹志浩的博客"><img class="site-icon" src="https://p.ipic.vip/nkaktf.jpg"/><span class="site-name">邹志浩的博客</span></a></span><div id="menus"><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">使用WireShark你需要知道的技巧（新手向）</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-05-29T01:57:21.000Z" title="发表于 2019-05-29 09:57:21">2019-05-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2023-08-10T16:59:01.037Z" title="更新于 2023-08-11 00:59:01">2023-08-11</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="使用WireShark你需要知道的技巧（新手向）"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div><article class="post-content" id="article-container"><blockquote>
+<p>前一阵子要给实验室的学弟们技术分享，当时收到建议给他们普及一些计算机网络的知识，可是关<br>有理论知识讲课肯定不够吸引人，于是便一边学习Wireshark一边做PPT一边写讲稿。忙碌了两个星期后，分享会后还是得到了不错的的评价😁，我也在博客中总结下一些使用技巧，内容主要面向新手</p>
+</blockquote>
+<h2 id="WireShark的用途"><a href="#WireShark的用途" class="headerlink" title="WireShark的用途"></a>WireShark的用途</h2><h3 id="用途一：-学习网络知识，提供实际操作"><a href="#用途一：-学习网络知识，提供实际操作" class="headerlink" title="用途一： 学习网络知识，提供实际操作"></a>用途一： 学习网络知识，提供实际操作</h3><p>在我大二学习计算机网络的时候，老师上课只负责书本的讲解，导致我产生了计算机网络很无聊的错觉，所以那时候也没太认真的学习这门课程。但是后来当我自己边抓包边温习计网知识的时候，才发现是如此的有趣。而在抓包工具中，我使用过小花瓶（charles）和小鲨鱼（wireshark），我推荐小鲨鱼。</p>
+<blockquote>
+<p>还有一款比较流行，叫fiddler，因为本人使用mac，fiddler未推出mac版，所以未接触过它</p>
+</blockquote>
+<h3 id="用途二：-获取网络资源信息"><a href="#用途二：-获取网络资源信息" class="headerlink" title="用途二： 获取网络资源信息"></a>用途二： 获取网络资源信息</h3><p>通俗点讲就是抓包，wireshark可以抓的请求类型非常多，新手常见的像http、https（需要下载补丁）、tcp、udp、arp等等都可以。</p>
+<h3 id="用途三：进行网络状况分析"><a href="#用途三：进行网络状况分析" class="headerlink" title="用途三：进行网络状况分析"></a>用途三：进行网络状况分析</h3><p>比如网络故障排查，因为本人也没利用wireshark分析过，所以就不误导大家了，不过我推荐一本书，也是我学习wireshark的一本书。<br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b034e550e178ea~tplv-t2oaga2asx-image.image"><br>作者的风格真的很风趣，读起来就像小说一样，指不定哪个地方就会偷偷冒出一段笑话。</p>
+<h2 id="抓包前的准备工作"><a href="#抓包前的准备工作" class="headerlink" title="抓包前的准备工作"></a>抓包前的准备工作</h2><h3 id="1-修改着色规则"><a href="#1-修改着色规则" class="headerlink" title="1. 修改着色规则"></a>1. 修改着色规则</h3><p>我们第一次使用的适合，显示的界面可能像这样<br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/12/14/16f04764d3d10a9f~tplv-t2oaga2asx-image.image"><br>一片白的，对于我们快速分辨不同请求类型是有妨碍的，所以简单操作下：</p>
+<h4 id="1）：-打开视图选项，找到着色规则，就像"><a href="#1）：-打开视图选项，找到着色规则，就像" class="headerlink" title="1）： 打开视图选项，找到着色规则，就像"></a>1）： 打开视图选项，找到着色规则，就像</h4><p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b03844f45a802a~tplv-t2oaga2asx-image.image"></p>
+<h4 id="2）：-修改背景配色"><a href="#2）：-修改背景配色" class="headerlink" title="2）： 修改背景配色"></a>2）： 修改背景配色</h4><p>我们根据自己的颜色偏好，设置不同的配色（想要搭配出一套养眼的配色真的是一件费力的事），我这里主要修改<strong>SYN报文</strong>（<strong>绿色</strong>）和<strong>FIN报文</strong>（<strong>灰色</strong>），配完后，就可以发现界面人性化许多，这下一眼就可以知道tcp握手和挥手的请求啦～</p>
+<p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b03873fb04efdf~tplv-t2oaga2asx-image.image"></p>
+<h3 id="2-只抓包头"><a href="#2-只抓包头" class="headerlink" title="2. 只抓包头"></a>2. 只抓包头</h3><p>众所周知，一个数据帧是由多个部分组成，对于我们所要获取的数据，我们也只要前面部分即可。单击菜单栏上的Capture–&gt;Options，然后在弹出的窗口上定义“Limit each packet to”的值即可。一般可以设置一个偏大一点的数字：80字节，这样就可以只抓前80字节了。这样的话，TCP层、网络层和数据链路层的信息都可以包括在内了。我推荐设置200字节，这样可以获取到http、tcp、网络层协议的数据了。</p>
+<!--![](https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b038b192f25302~tplv-t2oaga2asx-image.image)-->
+
+<h3 id="3-认识下分层"><a href="#3-认识下分层" class="headerlink" title="3. 认识下分层"></a>3. 认识下分层</h3><p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/12/14/16f047976a357b7f~tplv-t2oaga2asx-image.image"></p>
+<p>注意：在这里网络层对应Ipv4，传输层对应tcp，应用层对应http。如果是udp，长这样⬇</p>
+<p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b0397dc455cff5~tplv-t2oaga2asx-image.image"></p>
+<h3 id="4-数据过滤技巧"><a href="#4-数据过滤技巧" class="headerlink" title="4. 数据过滤技巧"></a>4. 数据过滤技巧</h3><p>这也是比较重要的一个小技巧，会使用过滤器的话对于快速定位还是有很大帮助的，我这里列出一些比较常用的技巧，一通则百通。</p>
+<h4 id="1）协议过滤"><a href="#1）协议过滤" class="headerlink" title="1）协议过滤"></a>1）协议过滤</h4><p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039b2a5642e35~tplv-t2oaga2asx-image.image"></p>
+<p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039b40ea70225~tplv-t2oaga2asx-image.image"></p>
+<p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039b515b268f2~tplv-t2oaga2asx-image.image"></p>
+<h4 id="2）-端口过滤"><a href="#2）-端口过滤" class="headerlink" title="2） 端口过滤"></a>2） 端口过滤</h4><p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039b9b618a472~tplv-t2oaga2asx-image.image"></p>
+<p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039bab4fddc54~tplv-t2oaga2asx-image.image"></p>
+<p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039bbc3d5152a~tplv-t2oaga2asx-image.image"></p>
+<h4 id="3）Ip过滤"><a href="#3）Ip过滤" class="headerlink" title="3）Ip过滤"></a>3）Ip过滤</h4><p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039c72b129565~tplv-t2oaga2asx-image.image"><br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039c8a6e3c3ec~tplv-t2oaga2asx-image.image"><br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039c9eb316c96~tplv-t2oaga2asx-image.image"><br><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039d555376068~tplv-t2oaga2asx-image.image"></p>
+<h4 id="4）标识符过滤"><a href="#4）标识符过滤" class="headerlink" title="4）标识符过滤"></a>4）标识符过滤</h4><p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039db9dd136f4~tplv-t2oaga2asx-image.image"></p>
+<h4 id="5）长度过滤"><a href="#5）长度过滤" class="headerlink" title="5）长度过滤"></a>5）长度过滤</h4><p><img src="https://p1-jj.byteimg.com/tos-cn-i-t2oaga2asx/gold-user-assets/2019/5/29/16b039df7abb24f7~tplv-t2oaga2asx-image.image"></p>
+<h3 id="先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～"><a href="#先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～" class="headerlink" title="先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～"></a>先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～</h3><blockquote>
+<p>如果哪里有错误，还恳请大家指出。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zexho994.github.io">邹志浩</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/">https://zexho994.github.io/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zexho994.github.io" target="_blank">邹志浩的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://p.ipic.vip/nkaktf.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2019/05/30/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%20%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88%20%E8%BF%9E%E9%80%9A%E6%95%B0%E6%8D%AE/" title="微信小程序 本地预览 连通数据"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">微信小程序 本地预览 连通数据</div></div></a></div><div class="next-post pull-right"><a href="/2019/05/28/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8FPOST%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/" title="微信小程序POST数据传输"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">微信小程序POST数据传输</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹志浩</div><div class="author-info__description">芝兰生于幽谷,不因无人而不芳</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">3</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/zexho994" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:zouzhihao994@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#WireShark%E7%9A%84%E7%94%A8%E9%80%94"><span class="toc-number">1.</span> <span class="toc-text">WireShark的用途</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E9%80%94%E4%B8%80%EF%BC%9A-%E5%AD%A6%E4%B9%A0%E7%BD%91%E7%BB%9C%E7%9F%A5%E8%AF%86%EF%BC%8C%E6%8F%90%E4%BE%9B%E5%AE%9E%E9%99%85%E6%93%8D%E4%BD%9C"><span class="toc-number">1.1.</span> <span class="toc-text">用途一： 学习网络知识，提供实际操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E9%80%94%E4%BA%8C%EF%BC%9A-%E8%8E%B7%E5%8F%96%E7%BD%91%E7%BB%9C%E8%B5%84%E6%BA%90%E4%BF%A1%E6%81%AF"><span class="toc-number">1.2.</span> <span class="toc-text">用途二： 获取网络资源信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E9%80%94%E4%B8%89%EF%BC%9A%E8%BF%9B%E8%A1%8C%E7%BD%91%E7%BB%9C%E7%8A%B6%E5%86%B5%E5%88%86%E6%9E%90"><span class="toc-number">1.3.</span> <span class="toc-text">用途三：进行网络状况分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%93%E5%8C%85%E5%89%8D%E7%9A%84%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="toc-number">2.</span> <span class="toc-text">抓包前的准备工作</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E4%BF%AE%E6%94%B9%E7%9D%80%E8%89%B2%E8%A7%84%E5%88%99"><span class="toc-number">2.1.</span> <span class="toc-text">1. 修改着色规则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%EF%BC%89%EF%BC%9A-%E6%89%93%E5%BC%80%E8%A7%86%E5%9B%BE%E9%80%89%E9%A1%B9%EF%BC%8C%E6%89%BE%E5%88%B0%E7%9D%80%E8%89%B2%E8%A7%84%E5%88%99%EF%BC%8C%E5%B0%B1%E5%83%8F"><span class="toc-number">2.1.1.</span> <span class="toc-text">1）： 打开视图选项，找到着色规则，就像</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%EF%BC%89%EF%BC%9A-%E4%BF%AE%E6%94%B9%E8%83%8C%E6%99%AF%E9%85%8D%E8%89%B2"><span class="toc-number">2.1.2.</span> <span class="toc-text">2）： 修改背景配色</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8F%AA%E6%8A%93%E5%8C%85%E5%A4%B4"><span class="toc-number">2.2.</span> <span class="toc-text">2. 只抓包头</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E8%AE%A4%E8%AF%86%E4%B8%8B%E5%88%86%E5%B1%82"><span class="toc-number">2.3.</span> <span class="toc-text">3. 认识下分层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%95%B0%E6%8D%AE%E8%BF%87%E6%BB%A4%E6%8A%80%E5%B7%A7"><span class="toc-number">2.4.</span> <span class="toc-text">4. 数据过滤技巧</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%EF%BC%89%E5%8D%8F%E8%AE%AE%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.1.</span> <span class="toc-text">1）协议过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%EF%BC%89-%E7%AB%AF%E5%8F%A3%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.2.</span> <span class="toc-text">2） 端口过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3%EF%BC%89Ip%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.3.</span> <span class="toc-text">3）Ip过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4%EF%BC%89%E6%A0%87%E8%AF%86%E7%AC%A6%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.4.</span> <span class="toc-text">4）标识符过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5%EF%BC%89%E9%95%BF%E5%BA%A6%E8%BF%87%E6%BB%A4"><span class="toc-number">2.4.5.</span> <span class="toc-text">5）长度过滤</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%88%E5%88%86%E4%BA%AB%E5%88%B0%E8%BF%99%E9%87%8C%EF%BC%8C%E8%BF%99%E5%87%A0%E5%A4%A9%E5%9C%A8%E5%BF%99%E7%9D%80%E5%86%99%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%EF%BC%8C%E8%BF%87%E5%87%A0%E5%A4%A9%E9%80%9A%E8%BF%87wireshark%E5%88%86%E6%9E%90%E4%B8%8Btcp3%E6%AC%A1%E6%8F%A1%E6%89%8B%E5%92%8C4%E6%AC%A1%E6%8C%A5%E6%89%8B%E6%9D%A5%E5%AE%9E%E6%88%98%E6%93%8D%E4%BD%9C%E4%B8%8B%EF%BD%9E"><span class="toc-number">2.5.</span> <span class="toc-text">先分享到这里，这几天在忙着写微信小程序，过几天通过wireshark分析下tcp3次握手和4次挥手来实战操作下～</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/05/30/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%20%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88%20%E8%BF%9E%E9%80%9A%E6%95%B0%E6%8D%AE/" title="微信小程序 本地预览 连通数据">微信小程序 本地预览 连通数据</a><time datetime="2019-05-30T11:37:46.000Z" title="发表于 2019-05-30 19:37:46">2019-05-30</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/05/29/%E4%BD%BF%E7%94%A8WireShark%E4%BD%A0%E9%9C%80%E8%A6%81%E7%9F%A5%E9%81%93%E7%9A%84%E6%8A%80%E5%B7%A7%EF%BC%88%E6%96%B0%E6%89%8B%E5%90%91%EF%BC%89/" title="使用WireShark你需要知道的技巧（新手向）">使用WireShark你需要知道的技巧（新手向）</a><time datetime="2019-05-29T01:57:21.000Z" title="发表于 2019-05-29 09:57:21">2019-05-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2019/05/28/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8FPOST%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93/" title="微信小程序POST数据传输">微信小程序POST数据传输</a><time datetime="2019-05-28T04:17:25.000Z" title="发表于 2019-05-28 12:17:25">2019-05-28</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2023 By 邹志浩</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: '795b5e8cc9f220c0abd0',
+      clientSecret: '1527ab5ca713e9e5688358bac83d155455670527',
+      repo: 'zexho994.github.io',
+      owner: 'zexho994',
+      admin: ['zexho994'],
+      id: '7bc7ac588230d444fb49fa6215ea94cd',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+    getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.textContent= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
