@@ -1,0 +1,510 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>MIT6.824 lab2 Raft-Leader election | Zexho</title><meta name="author" content="邹志浩,zouzhihao994@gmail.com"><meta name="copyright" content="邹志浩"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本文假设你已经对课程进行了部分了解，所以不对课程的要求进行过多描述，重点在代码的分析和一些踩坑记录和理解。  课程链接： http:&#x2F;&#x2F;nil.csail.mit.edu&#x2F;6.824&#x2F;2020&#x2F;labs&#x2F;lab-raft.html 目标实现raft算法中的领导人选举部分">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6.824 lab2 Raft-Leader election">
+<meta property="og:url" content="https://zexho994.github.io/2022/06/15/MIT6.824%20lab2%20Raft-Leader%20election/index.html">
+<meta property="og:site_name" content="Zexho">
+<meta property="og:description" content="本文假设你已经对课程进行了部分了解，所以不对课程的要求进行过多描述，重点在代码的分析和一些踩坑记录和理解。  课程链接： http:&#x2F;&#x2F;nil.csail.mit.edu&#x2F;6.824&#x2F;2020&#x2F;labs&#x2F;lab-raft.html 目标实现raft算法中的领导人选举部分">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p.ipic.vip/nkaktf.jpg">
+<meta property="article:published_time" content="2022-06-15T03:20:21.000Z">
+<meta property="article:modified_time" content="2023-08-12T02:43:50.381Z">
+<meta property="article:author" content="邹志浩">
+<meta property="article:tag" content="MIT">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p.ipic.vip/nkaktf.jpg"><link rel="shortcut icon" href="https://p.ipic.vip/nkaktf.jpg"><link rel="canonical" href="https://zexho994.github.io/2022/06/15/MIT6.824%20lab2%20Raft-Leader%20election/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":20,"languages":{"author":"作者: 邹志浩","link":"链接: ","source":"来源: Zexho","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'MIT6.824 lab2 Raft-Leader election',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-08-12 10:43:50'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load',() => { preloader.endLoading() })
+
+  if (true) {
+    document.addEventListener('pjax:send', () => { preloader.initLoading() })
+    document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Zexho"><img class="site-icon" src="https://p.ipic.vip/nkaktf.jpg"/><span class="site-name">Zexho</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">MIT6.824 lab2 Raft-Leader election</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2022-06-15T03:20:21.000Z" title="发表于 2022-06-15 11:20:21">2022-06-15</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>8分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="MIT6.824 lab2 Raft-Leader election"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><blockquote>
+<p>本文假设你已经对课程进行了部分了解，所以不对课程的要求进行过多描述，重点在代码的分析和一些踩坑记录和理解。</p>
+</blockquote>
+<p>课程链接： <a target="_blank" rel="noopener" href="http://nil.csail.mit.edu/6.824/2020/labs/lab-raft.html">http://nil.csail.mit.edu/6.824/2020/labs/lab-raft.html</a></p>
+<h2 id="目标"><a href="#目标" class="headerlink" title="目标"></a>目标</h2><p>实现raft算法中的领导人选举部分</p>
+<span id="more"></span>
+
+
+<h2 id="需要实现的部分"><a href="#需要实现的部分" class="headerlink" title="需要实现的部分"></a>需要实现的部分</h2><ol>
+<li><p>Make()</p>
+</li>
+<li><p>Raft{}</p>
+</li>
+<li><p>GetState()</p>
+</li>
+<li><p>RequestVote()</p>
+</li>
+<li><p>RequestVoteArgs{}</p>
+</li>
+<li><p>RequestVoteReply{}</p>
+</li>
+<li><p>AppendEntries()</p>
+</li>
+<li><p>AppendEntriesArgs {}</p>
+</li>
+<li><p>AppendEntriesReply {}</p>
+</li>
+</ol>
+<h2 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h2><p>理解了流程图，要实现代码就比较简单了</p>
+<p><img src="https://tva1.sinaimg.cn/large/e6c9d24egy1h37zphn2mhj21gr0k340k.jpg"></p>
+<h2 id="code"><a href="#code" class="headerlink" title="code"></a>code</h2><p>这里直接展示代码，代码的逻辑配合流程图可以理解清楚。</p>
+<h3 id="Raft"><a href="#Raft" class="headerlink" title="Raft { }"></a>Raft { }</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> Leader <span class="type">int32</span> = <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> Follower <span class="type">int32</span> = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> Candidate <span class="type">int32</span> = <span class="number">3</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> Raft <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line">    mu sync.Mutex <span class="comment">// Lock to protect shared access to this Peer&#x27;s state</span></span><br><span class="line"></span><br><span class="line">    peers []*labrpc.ClientEnd <span class="comment">// RPC end points of all peers</span></span><br><span class="line"></span><br><span class="line">    persister *Persister <span class="comment">// Object to hold this Peer&#x27;s persisted state</span></span><br><span class="line"></span><br><span class="line">    me <span class="type">int</span> <span class="comment">// this Peer&#x27;s index into peers[]</span></span><br><span class="line"></span><br><span class="line">    dead <span class="type">int32</span> <span class="comment">// set by Kill()</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//任期号</span></span><br><span class="line"></span><br><span class="line">    Term <span class="type">int32</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//获得选票的服务器</span></span><br><span class="line"></span><br><span class="line">    VotedFor <span class="type">int</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//角色类型</span></span><br><span class="line"></span><br><span class="line">    Role <span class="type">int32</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//下一个超时时间</span></span><br><span class="line"></span><br><span class="line">    NextTimeout time.Time</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="Make"><a href="#Make" class="headerlink" title="Make()"></a>Make()</h3><p>最先要实现的部分是Make()方法，目的是要创建一个Raft对象、运行后台任务</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">Make</span><span class="params">(peers []*labrpc.ClientEnd, me <span class="type">int</span>, persister *Persister, applyCh <span class="keyword">chan</span> ApplyMsg)</span></span> *Raft &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//log.Printf(&quot;== Make() ==&quot;)</span></span><br><span class="line"></span><br><span class="line">    rf := &amp;Raft&#123;&#125;</span><br><span class="line"></span><br><span class="line">    rf.peers = peers</span><br><span class="line"></span><br><span class="line">    rf.persister = persister</span><br><span class="line"></span><br><span class="line">    rf.me = me</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Your initialization Code here (2A, 2B, 2C).</span></span><br><span class="line"></span><br><span class="line">    rf.Term = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    rf.Role = Follower</span><br><span class="line"></span><br><span class="line">    rf.VotedFor = <span class="number">-1</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 设置下次心跳检查时间</span></span><br><span class="line"></span><br><span class="line">    rf.updateHeartbeatTime()</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 维持状态的协程</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">go</span> rf.maintainStateLoop()</span><br><span class="line"></span><br><span class="line">    <span class="comment">// initialize from state persisted before a crash</span></span><br><span class="line"></span><br><span class="line">    rf.readPersist(persister.ReadRaftState())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> rf</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>goroutine 的方法 maintainStateLoop() 负责不停的执行各个角色对应的操作</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span></span> maintainStateLoop() &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> !rf.killed() &#123;</span><br><span class="line"></span><br><span class="line">        rf.mu.Lock()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> rf.isLeader() &#123;</span><br><span class="line"></span><br><span class="line">            rf.maintainsLeader()</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> rf.isFollower() &#123;</span><br><span class="line"></span><br><span class="line">            rf.maintainsFollower()</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> rf.isCandidate() &#123;</span><br><span class="line"></span><br><span class="line">            rf.maintainsCandidate()</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">            log.Fatalf(<span class="string">&quot;[raft-%v %v] Role type error : %v \n&quot;</span>, rf.me, rf.getRole(), rf.Role)</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="follower-的职责"><a href="#follower-的职责" class="headerlink" title="follower 的职责"></a>follower 的职责</h3><p>判断心跳是否超时，如果超时就变成candidate</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span></span> maintainsFollower() &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> rf.heartbeatTimeout() &#123;</span><br><span class="line"></span><br><span class="line">        rf.changeToCandidate()</span><br><span class="line"></span><br><span class="line">        rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">        rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line">        time.Sleep(<span class="number">10</span> * time.Millisecond)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="candidate-的职责"><a href="#candidate-的职责" class="headerlink" title="candidate 的职责"></a>candidate 的职责</h3><p>负责发起竞选的rpc，根据请求的reply进行处理不同的处理</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span></span> maintainsCandidate() &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 检查超时</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> !rf.heartbeatTimeout() &#123;</span><br><span class="line"></span><br><span class="line">        rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line">        time.Sleep(<span class="number">10</span> * time.Millisecond)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 发送投票RPC</span></span><br><span class="line"></span><br><span class="line">    log.Printf(<span class="string">&quot;[raft-%v %v %v] == 发起投票RPC == \n&quot;</span>, rf.me, rf.getRole(), rf.Term)</span><br><span class="line"></span><br><span class="line">    rf.VotedFor = rf.me</span><br><span class="line"></span><br><span class="line">    rf.Term += <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    maxTerm, sumVotes := rf.Term, <span class="built_in">len</span>(rf.peers)</span><br><span class="line"></span><br><span class="line">    voteReply := <span class="built_in">make</span>(<span class="keyword">chan</span> *RequestVoteReply)</span><br><span class="line"></span><br><span class="line">    args := RequestVoteArgs&#123;Peer: rf.me, Term: rf.Term&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> idx := <span class="keyword">range</span> rf.peers &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> rf.me == idx &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(from <span class="type">int</span>, to <span class="type">int</span>, term <span class="type">int32</span>)</span></span> &#123;</span><br><span class="line"></span><br><span class="line">            reply := RequestVoteReply&#123;Peer: to, Term: term, VoteGranted: <span class="literal">false</span>&#125;</span><br><span class="line"></span><br><span class="line">            _ = rf.sendRequestVote(to, &amp;args, &amp;reply)</span><br><span class="line"></span><br><span class="line">            voteReply &lt;- &amp;reply</span><br><span class="line"></span><br><span class="line">        &#125;(rf.me, idx, rf.Term)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 处理投票回复</span></span><br><span class="line"></span><br><span class="line">    validVotes, acceptVotes := <span class="number">1</span>, <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">select</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">case</span> reply := &lt;-voteReply:</span><br><span class="line"></span><br><span class="line">        validVotes++</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> reply.VoteGranted &#123;</span><br><span class="line"></span><br><span class="line">            acceptVotes++</span><br><span class="line"></span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> reply.Term &gt; maxTerm &#123;</span><br><span class="line"></span><br><span class="line">            maxTerm = reply.Term</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> validVotes &gt; sumVotes/<span class="number">2</span> &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">goto</span> VotedDone</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//汇总投票结果</span></span><br><span class="line"></span><br><span class="line">VotedDone:</span><br><span class="line"></span><br><span class="line">    rf.mu.Lock()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">defer</span> rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> rf.killed() || !rf.isCandidate() &#123;</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> maxTerm &gt; rf.Term &#123;</span><br><span class="line"></span><br><span class="line">        log.Printf(<span class="string">&quot;[raft-%v-%v-%v] 投票结果: 有更大的Term,放弃竞选: %v.\n&quot;</span>, rf.me, rf.getRole(), rf.Term, maxTerm)</span><br><span class="line"></span><br><span class="line">        rf.changeToFollower(maxTerm)</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> rf.isQuorum(acceptVotes) &#123;</span><br><span class="line"></span><br><span class="line">        log.Printf(<span class="string">&quot;[raft-%v-%v-%v] == 投票通过: 总票数 = %v. 赞同票数 = %v == \n&quot;</span>, rf.me, rf.getRole(), rf.Term, sumVotes, acceptVotes)</span><br><span class="line"></span><br><span class="line">        rf.changeToLeader()</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">        log.Printf(<span class="string">&quot;[raft-%v-%v-%v] == 投票未通过: 总票数 = %v. 赞同票数 = %v == \n&quot;</span>, rf.me, rf.getRole(), rf.Term, sumVotes, acceptVotes)</span><br><span class="line"></span><br><span class="line">        rf.updateHeartbeatTime()</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span></span> isQuorum(accept <span class="type">int</span>) <span class="type">bool</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> accept &gt; <span class="built_in">len</span>(rf.peers)/<span class="number">2</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="Leader-的职责"><a href="#Leader-的职责" class="headerlink" title="Leader 的职责"></a>Leader 的职责</h3><p>负责向其他所有节点发送心跳</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span></span> maintainsLeader() &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//log.Printf(&quot;[raft-%v %v %v] 发送心跳RPC. now = %v&quot;, rf.me, rf.getRole(), rf.Term, time.Now().Local())</span></span><br><span class="line"></span><br><span class="line">    args := AppendEntriesArgs&#123;Peer: rf.me, Term: rf.Term&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> idx := <span class="keyword">range</span> rf.peers &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> idx == rf.me &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(from <span class="type">int</span>, to <span class="type">int</span>, term <span class="type">int32</span>)</span></span> &#123;</span><br><span class="line"></span><br><span class="line">            reply := AppendEntriesReply&#123;&#125;</span><br><span class="line"></span><br><span class="line">            flag := rf.sendAppendEntries(to, &amp;args, &amp;reply)</span><br><span class="line"></span><br><span class="line">            rf.mu.Lock()</span><br><span class="line"></span><br><span class="line">            <span class="keyword">defer</span> rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> !rf.killed() &amp;&amp; rf.isLeader() &amp;&amp; flag &amp;&amp; reply.Term &gt; rf.Term &amp;&amp; args.Term == rf.Term &#123;</span><br><span class="line"></span><br><span class="line">                rf.changeToFollower(reply.Term)</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;(rf.me, idx, rf.Term)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line">    time.Sleep(<span class="number">100</span> * time.Millisecond)</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="竞选投票相关"><a href="#竞选投票相关" class="headerlink" title="竞选投票相关"></a>竞选投票相关</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">type</span> RequestVoteArgs <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 竞选人id</span></span><br><span class="line"></span><br><span class="line">    Peer <span class="type">int</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 竞选人term</span></span><br><span class="line"></span><br><span class="line">    Term <span class="type">int32</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">type</span> RequestVoteReply <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 发送回复的节点id</span></span><br><span class="line"></span><br><span class="line">    Peer <span class="type">int</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 发送回复的节点term</span></span><br><span class="line"></span><br><span class="line">    Term <span class="type">int32</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果为true表示赞同</span></span><br><span class="line"></span><br><span class="line">    VoteGranted <span class="type">bool</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span></span> RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) &#123;</span><br><span class="line"></span><br><span class="line">    rf.mu.Lock()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">defer</span> rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> rf.killed() &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    log.Printf(<span class="string">&quot;[raft-%v %v %v] 处理%v的投票RPC. T = %v \n&quot;</span>, rf.me, rf.getRole(), rf.Term, args.Peer, args.Term)</span><br><span class="line"></span><br><span class="line">    reply.Term, reply.VoteGranted = rf.Term, <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// term太小，不理</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> args.Term &lt; rf.Term &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 更大的term</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> args.Term &gt; rf.Term &#123;</span><br><span class="line"></span><br><span class="line">        rf.changeToFollower(args.Term)</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 每个任期，只能投票一次</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> rf.VotedFor == <span class="number">-1</span> || rf.VotedFor == args.Peer &#123;</span><br><span class="line"></span><br><span class="line">        reply.VoteGranted = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">        rf.VotedFor = args.Peer</span><br><span class="line"></span><br><span class="line">        rf.updateHeartbeatTime()</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="心跳相关"><a href="#心跳相关" class="headerlink" title="心跳相关"></a>心跳相关</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">type</span> AppendEntriesArgs <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line">    Peer <span class="type">int</span></span><br><span class="line"></span><br><span class="line">    Term <span class="type">int32</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">type</span> AppendEntriesReply <span class="keyword">struct</span> &#123;</span><br><span class="line"></span><br><span class="line">    Term <span class="type">int32</span></span><br><span class="line"></span><br><span class="line">    Result <span class="type">bool</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">\</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="params">(rf *Raft)</span></span> AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply) &#123;</span><br><span class="line"></span><br><span class="line">    rf.mu.Lock()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">defer</span> rf.mu.Unlock()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> rf.killed() &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//log.Printf(&quot;[raft-%v %v %v] 接收来自%v的心跳请求. T = %v.\n&quot;, rf.me, rf.getRole(), rf.Term, args.Peer, args.Term)</span></span><br><span class="line"></span><br><span class="line">    reply.Term, reply.Result = rf.Term, args.Term &gt;= rf.Term</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> args.Term &lt; rf.Term &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> rf.isCandidate() &#123;</span><br><span class="line"></span><br><span class="line">        rf.changeToFollower(args.Term)</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">        rf.updateHeartbeatTime()</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 日志操作lab-2A不实现</span></span><br><span class="line"></span><br><span class="line">    rf.persist()</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">--- FAIL: TestReElection2A (8.51s)</span><br><span class="line"></span><br><span class="line">config.go:330: expected one leader, got none</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<p>在这个test case中，先disconnect已经选出来的leader，然后给2s的时间选举出新的leader，这里的错误原因就是2s时间没有选举出新的leader。</p>
+<p>要点在于如何提高选举的效率，保证更快的时间内（2s内）选举出leader，</p>
+<p>出现这个情况的原因大概率和活锁有关，两个或多个candidate争夺竞选，这里注意一些要点：</p>
+<ol>
+<li>关于选举间隔时间：建议 150 ~ 300 之间</li>
+</ol>
+<ul>
+<li><p>设置太高会浪费空闲时间</p>
+</li>
+<li><p>设置太低又容易发生活锁，也存在一种情况就是leader选举出来了，但是又收到term更高的vote rp请求。</p>
+</li>
+</ul>
+<ol start="2">
+<li><p>当选leader，应该尽快发送心跳rpc，防止follow过期</p>
+</li>
+<li><p>leader 发送心跳的频率 ， 建议在100ms一次，官方也是建议1s不超过10次</p>
+</li>
+</ol>
+<p>关于更新心跳时间的条件，首先本质上就是在收到有效的rpc请求时（知道有别人存活）或者自己发起选举时（知道自己存活），就要更新心跳时间，如下三个点：</p>
+<ul>
+<li><p>收到leader的心跳rpc时（leader.term &gt;&#x3D; self.term 即算有效）</p>
+</li>
+<li><p>收到candidate的投票请求，并投了赞同票时</p>
+</li>
+<li><p>在进行新一轮的选举时</p>
+</li>
+</ul>
+<h2 id="脚本测试"><a href="#脚本测试" class="headerlink" title="脚本测试"></a>脚本测试</h2><blockquote>
+<p>测试脚本: <a target="_blank" rel="noopener" href="https://gist.github.com/jonhoo/">https://gist.github.com/jonhoo/</a></p>
+</blockquote>
+<p>250 次测试结果通过</p>
+<p><img src="https://tva1.sinaimg.cn/large/e6c9d24egy1h386800abjj20hi064q3q.jpg"></p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><p>参考使用chan + select 的模式： <a target="_blank" rel="noopener" href="https://yuerblog.cc/2020/08/13/mit-6-824-distributed-systems-%E5%AE%9E%E7%8E%B0raft-lab2a/">https://yuerblog.cc/2020/08/13/mit-6-824-distributed-systems-%E5%AE%9E%E7%8E%B0raft-lab2a/</a></p>
+</li>
+<li><p>raft论文(中文) : <a target="_blank" rel="noopener" href="https://yuerblog.cc/wp-content/uploads/raft-zh_cn.pdf">https://yuerblog.cc/wp-content/uploads/raft-zh_cn.pdf</a> [ 主要看5.2 leader 选举部分 ]</p>
+</li>
+<li><p><a target="_blank" rel="noopener" href="https://mit-public-courses-cn-translatio.gitbook.io/mit6-824/lecture-06-raft1/6.8-xuan-ju-ding-shi-qi-election-timer">https://mit-public-courses-cn-translatio.gitbook.io/mit6-824/lecture-06-raft1/6.8-xuan-ju-ding-shi-qi-election-timer</a></p>
+</li>
+<li><p>一些注意事项 : <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/368433074">https://zhuanlan.zhihu.com/p/368433074</a></p>
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zexho994.github.io">邹志浩</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zexho994.github.io/2022/06/15/MIT6.824%20lab2%20Raft-Leader%20election/">https://zexho994.github.io/2022/06/15/MIT6.824%20lab2%20Raft-Leader%20election/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zexho994.github.io" target="_blank">Zexho</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/MIT/">MIT</a></div><div class="post_share"><div class="social-share" data-image="https://p.ipic.vip/nkaktf.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/06/21/MIT6.824%20lab2%20Raft2B-%E6%97%A5%E5%BF%97%E5%90%8C%E6%AD%A5/" title="MIT6.824 lab2 Raft2B-日志同步"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">MIT6.824 lab2 Raft2B-日志同步</div></div></a></div><div class="next-post pull-right"><a href="/2022/05/15/Mit%206.824%20lab1%20MapReduce/" title="Mit 6.824 lab1 MapReduce 设计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Mit 6.824 lab1 MapReduce 设计</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/05/15/Mit%206.824%20lab1%20MapReduce/" title="Mit 6.824 lab1 MapReduce 设计"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-05-15</div><div class="title">Mit 6.824 lab1 MapReduce 设计</div></div></a></div><div><a href="/2022/06/21/MIT6.824%20lab2%20Raft2B-%E6%97%A5%E5%BF%97%E5%90%8C%E6%AD%A5/" title="MIT6.824 lab2 Raft2B-日志同步"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-06-21</div><div class="title">MIT6.824 lab2 Raft2B-日志同步</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹志浩</div><div class="author-info__description">芝兰生于幽谷,不因无人而不芳</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/zexho994" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:zouzhihao994@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87"><span class="toc-number">1.</span> <span class="toc-text">目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9C%80%E8%A6%81%E5%AE%9E%E7%8E%B0%E7%9A%84%E9%83%A8%E5%88%86"><span class="toc-number">2.</span> <span class="toc-text">需要实现的部分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-number">3.</span> <span class="toc-text">流程图</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#code"><span class="toc-number">4.</span> <span class="toc-text">code</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Raft"><span class="toc-number">4.1.</span> <span class="toc-text">Raft { }</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Make"><span class="toc-number">4.2.</span> <span class="toc-text">Make()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#follower-%E7%9A%84%E8%81%8C%E8%B4%A3"><span class="toc-number">4.3.</span> <span class="toc-text">follower 的职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#candidate-%E7%9A%84%E8%81%8C%E8%B4%A3"><span class="toc-number">4.4.</span> <span class="toc-text">candidate 的职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Leader-%E7%9A%84%E8%81%8C%E8%B4%A3"><span class="toc-number">4.5.</span> <span class="toc-text">Leader 的职责</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AB%9E%E9%80%89%E6%8A%95%E7%A5%A8%E7%9B%B8%E5%85%B3"><span class="toc-number">4.6.</span> <span class="toc-text">竞选投票相关</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BF%83%E8%B7%B3%E7%9B%B8%E5%85%B3"><span class="toc-number">4.7.</span> <span class="toc-text">心跳相关</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">5.</span> <span class="toc-text">注意事项</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%84%9A%E6%9C%AC%E6%B5%8B%E8%AF%95"><span class="toc-number">6.</span> <span class="toc-text">脚本测试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-number">7.</span> <span class="toc-text">Reference</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/03/16/%E6%9E%84%E5%BB%BA%20Antlr4%20AST%E7%9A%84%E4%B8%80%E7%82%B9%E5%BF%83%E5%BE%97/" title="构建 Antlr4 AST的一点心得">构建 Antlr4 AST的一点心得</a><time datetime="2023-03-16T03:20:21.000Z" title="发表于 2023-03-16 11:20:21">2023-03-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/09/20/%E6%95%B4%E5%90%88%20Spring%20Cloud%20OpenFeign/" title="整合 Spring Cloud OpenFeign">整合 Spring Cloud OpenFeign</a><time datetime="2022-09-20T03:20:21.000Z" title="发表于 2022-09-20 11:20:21">2022-09-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/09/19/%E5%88%9D%E6%8E%A2%20Spring%20Hateoas/" title="初探 Spring Hateoas">初探 Spring Hateoas</a><time datetime="2022-09-19T03:20:21.000Z" title="发表于 2022-09-19 11:20:21">2022-09-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/07/07/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BA%20Raft%20%E5%8D%8F%E8%AE%AE/" title="深入浅出 Raft 协议">深入浅出 Raft 协议</a><time datetime="2022-07-07T03:20:21.000Z" title="发表于 2022-07-07 11:20:21">2022-07-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/06/21/MIT6.824%20lab2%20Raft2B-%E6%97%A5%E5%BF%97%E5%90%8C%E6%AD%A5/" title="MIT6.824 lab2 Raft2B-日志同步">MIT6.824 lab2 Raft2B-日志同步</a><time datetime="2022-06-21T03:20:21.000Z" title="发表于 2022-06-21 11:20:21">2022-06-21</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2023 By 邹志浩</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: '795b5e8cc9f220c0abd0',
+      clientSecret: '1527ab5ca713e9e5688358bac83d155455670527',
+      repo: 'zexho994.github.io',
+      owner: 'zexho994',
+      admin: ['zexho994'],
+      id: 'd8fa6c60de0a03c7de23f631bc0ca9fc',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+    getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.textContent= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script>window.addEventListener('load', () => {
+  const changeContent = (content) => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g,"") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0,150) + '...'
+    }
+    return content
+  }
+
+  const findTrueUrl = (array) => {
+    Promise.all(array.map(item =>
+      fetch(item.url).then(resp => resp.json()).then(data => {
+        const urlArray = data.body.match(/(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?/ig)
+        if (data.user.login === 'utterances-bot') {
+          return urlArray.pop()
+        } else {
+          return urlArray.shift()
+        }
+      })
+    )).then(res => {
+        array = array.map((i,index)=> {
+          return {
+            ...i,
+            url: res[index]
+          }
+        })
+
+        saveToLocal.set('github-newest-comments', JSON.stringify(array), 10/(60*24))
+        generateHtml(array)
+    });
+  }
+
+  const getComment = () => {
+    fetch('https://api.github.com/repos/zexho994/zexho994.github.io/issues/comments?sort=updated&direction=desc&per_page=5&page=1',{
+      "headers": {
+        Accept: 'application/vnd.github.v3.html+json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        const githubArray = data.map(item => {
+          return {
+            'avatar': item.user.avatar_url,
+            'content': changeContent(item.body_html),
+            'nick': item.user.login,
+            'url': item.issue_url,
+            'date': item.updated_at,
+            'githubUrl': item.html_url
+          }
+        })
+        findTrueUrl(githubArray)
+      }).catch(e => {
+        const $dom = document.querySelector('#card-newest-comments .aside-list')
+        $dom.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+  }
+
+  const generateHtml = array => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class=\'aside-list-item\'>'
+
+        if (true) {
+          const name = 'src'
+          result += `<a href='${array[i].url}' class='thumbnail'><img ${name}='${array[i].avatar}' alt='${array[i].nick}'></a>`
+        }
+
+        result += `<div class='content'>
+        <a class='comment' href='${array[i].url}' title='${array[i].content}'>${array[i].content}</a>
+        <div class='name'><span>${array[i].nick} / </span><time datetime="${array[i].date}">${btf.diffDate(array[i].date, true)}</time></div>
+        </div></div>`
+      }
+    } else {
+      result += '没有评论'
+    }
+
+    let $dom = document.querySelector('#card-newest-comments .aside-list')
+    $dom.innerHTML= result
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh($dom)
+  }
+
+  const newestCommentInit = () => {
+    if (document.querySelector('#card-newest-comments .aside-list')) {
+      const data = saveToLocal.get('github-newest-comments')
+      if (data) {
+        generateHtml(JSON.parse(data))
+      } else {
+        getComment()
+      }
+    }
+  }
+
+  newestCommentInit()
+  document.addEventListener('pjax:complete', newestCommentInit)
+})</script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

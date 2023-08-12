@@ -1,0 +1,439 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Mysql utf-8 使用请注意 | Zexho</title><meta name="author" content="邹志浩,zouzhihao994@gmail.com"><meta name="copyright" content="邹志浩"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="今天看到一篇文章，觉得不错。 原文链接：https:&#x2F;&#x2F;medium.com&#x2F;@adamhooper&#x2F;in-mysql-never-use-utf8-use-utf8mb4-11761243e434 译文：https:&#x2F;&#x2F;www.jianshu.com&#x2F;p&#x2F;ab9aa8d4df7d 最近我遇到了一个bug，我试着通过Rails在以“utf8”编码的MariaDB中保存一个UTF-8字符串，然后出现">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mysql utf-8 使用请注意">
+<meta property="og:url" content="https://zexho994.github.io/2019/06/04/Mysql%20utf-8%20%E4%BD%BF%E7%94%A8%E8%AF%B7%E6%B3%A8%E6%84%8F/index.html">
+<meta property="og:site_name" content="Zexho">
+<meta property="og:description" content="今天看到一篇文章，觉得不错。 原文链接：https:&#x2F;&#x2F;medium.com&#x2F;@adamhooper&#x2F;in-mysql-never-use-utf8-use-utf8mb4-11761243e434 译文：https:&#x2F;&#x2F;www.jianshu.com&#x2F;p&#x2F;ab9aa8d4df7d 最近我遇到了一个bug，我试着通过Rails在以“utf8”编码的MariaDB中保存一个UTF-8字符串，然后出现">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p.ipic.vip/nkaktf.jpg">
+<meta property="article:published_time" content="2019-06-04T01:56:17.000Z">
+<meta property="article:modified_time" content="2023-08-12T01:58:11.822Z">
+<meta property="article:author" content="邹志浩">
+<meta property="article:tag" content="技术,Java,博客">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p.ipic.vip/nkaktf.jpg"><link rel="shortcut icon" href="https://p.ipic.vip/nkaktf.jpg"><link rel="canonical" href="https://zexho994.github.io/2019/06/04/Mysql%20utf-8%20%E4%BD%BF%E7%94%A8%E8%AF%B7%E6%B3%A8%E6%84%8F/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":20,"languages":{"author":"作者: 邹志浩","link":"链接: ","source":"来源: Zexho","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Mysql utf-8 使用请注意',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-08-12 09:58:11'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load',() => { preloader.endLoading() })
+
+  if (true) {
+    document.addEventListener('pjax:send', () => { preloader.initLoading() })
+    document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Zexho"><img class="site-icon" src="https://p.ipic.vip/nkaktf.jpg"/><span class="site-name">Zexho</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Mysql utf-8 使用请注意</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2019-06-04T01:56:17.000Z" title="发表于 2019-06-04 09:56:17">2019-06-04</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>5分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="Mysql utf-8 使用请注意"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>今天看到一篇文章，觉得不错。</p>
+<p>原文链接：<a target="_blank" rel="noopener" href="https://medium.com/@adamhooper/in-mysql-never-use-utf8-use-utf8mb4-11761243e434">https://medium.com/@adamhooper/in-mysql-never-use-utf8-use-utf8mb4-11761243e434</a></p>
+<p>译文：<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/ab9aa8d4df7d">https://www.jianshu.com/p/ab9aa8d4df7d</a></p>
+<p>最近我遇到了一个bug，我试着通过Rails在以“utf8”编码的MariaDB中保存一个UTF-8字符串，然后出现了一个离奇的错误：</p>
+<p>Incorrect string value:‘ð&lt;…’for column ‘summary’ at row 1<br>我用的是UTF-8编码的客户端，服务器也是UTF-8编码的，数据库也是，就连要保存的这个字符串“???? &lt;…”也是合法的UTF-8。</p>
+<p>问题的症结在于，MySQL的“utf8”实际上不是真正的UTF-8。</p>
+<p>“utf8”只支持每个字符最多三个字节，而真正的UTF-8是每个字符最多四个字节。</p>
+<p>MySQL一直没有修复这个bug，他们在2010年发布了一个叫作“utf8mb4”的字符集，绕过了这个问题。</p>
+<p>当然，他们并没有对新的字符集广而告之（可能是因为这个bug让他们觉得很尴尬），以致于现在网络上仍然在建议开发者使用“utf8”，但这些建议都是错误的。</p>
+<p>简单概括如下：</p>
+<p>1.MySQL的“utf8mb4”是真正的“UTF-8”。</p>
+<p>2.MySQL的“utf8”是一种“专属的编码”，它能够编码的Unicode字符并不多。</p>
+<p>我要在这里澄清一下：所有在使用“utf8”的MySQL和MariaDB用户都应该改用“utf8mb4”，永远都不要再使用“utf8”。</p>
+<p>那么什么是编码？什么是UTF-8？</p>
+<p>我们都知道，计算机使用0和1来存储文本。比如字符“C”被存成“01000011”，那么计算机在显示这个字符时需要经过两个步骤：</p>
+<p>1、计算机读取“01000011”，得到数字67，因为67被编码成“01000011”。</p>
+<p>2、计算机在Unicode字符集中查找67，找到了“C”。</p>
+<p>同样的：</p>
+<p>1、我的电脑将“C”映射成Unicode字符集中的67。</p>
+<p>2、我的电脑将67编码成“01000011”，并发送给Web服务器。</p>
+<p>几乎所有的网络应用都使用了Unicode字符集，因为没有理由使用其他字符集。</p>
+<p>Unicode字符集包含了上百万个字符。最简单的编码是UTF-32，每个字符使用32位。这样做最简单，因为一直以来，计算机将32位视为数字，而计算机最在行的就是处理数字。但问题是，这样太浪费空间了。</p>
+<p>UTF-8可以节省空间，在UTF-8中，字符“C”只需要8位，一些不常用的字符，比如“”需要32位。其他的字符可能使用16位或24位。一篇类似本文这样的文章，如果使用UTF-8编码，占用的空间只有UTF-32的四分之一左右。</p>
+<p>MySQL的“utf8”字符集与其他程序不兼容，它所谓的“”，可能真的是一坨……<br>MySQL简史</p>
+<p>为什么MySQL开发者会让“utf8”失效？我们或许可以从提交日志中寻找答案。<br>MySQL从4.1版本开始支持UTF-8，也就是2003年，而今天使用的UTF-8标准（RFC3629）是随后才出现的。</p>
+<p>旧版的UTF-8标准（RFC2279）最多支持每个字符6个字节。2002年3月28日，MySQL开发者在第一个MySQL4.1预览版中使用了RFC2279。</p>
+<p>同年9月，他们对MySQL源代码进行了一次调整：“UTF8现在最多只支持3个字节的序列”。<br>是谁提交了这些代码？他为什么要这样做？这个问题不得而知。在迁移到Git后（MySQL最开始使用的是BitKeeper），MySQL代码库中的很多提交者的名字都丢失了。2003年9月的邮件列表中也找不到可以解释这一变更的线索。</p>
+<p>不过我可以试着猜测一下。</p>
+<p>2002年，MySQL做出了一个决定：如果用户可以保证数据表的每一行都使用相同的字节数，那么MySQL就可以在性能方面来一个大提升。为此，用户需要将文本列定义为“CHAR”，每个“CHAR”列总是拥有相同数量的字符。如果插入的字符少于定义的数量，MySQL就会在后面填充空格，如果插入的字符超过了定义的数量，后面超出部分会被截断。</p>
+<p>MySQL开发者在最开始尝试UTF-8时使用了每个字符6个字节，CHAR(1)使用6个字节，CHAR(2)使用12个字节，并以此类推。</p>
+<p>应该说，他们最初的行为才是正确的，可惜这一版本一直没有发布。但是文档上却这么写了，而且广为流传，所有了解UTF-8的人都认同文档里写的东西。</p>
+<p>不过很显然，MySQL开发者或厂商担心会有用户做这两件事：</p>
+<p>1、使用CHAR定义列（在现在看来，CHAR已经是老古董了，但在那时，在MySQL中使用CHAR会更快，不过从2005年以后就不是这样子了）。</p>
+<p>2、将CHAR列的编码设置为“utf8”。</p>
+<p>我的猜测是MySQL开发者本来想帮助那些希望在空间和速度上双赢的用户，但他们搞砸了“utf8”编码。</p>
+<p>所以结果就是没有赢家。那些希望在空间和速度上双赢的用户，当他们在使用“utf8”的CHAR列时，实际上使用的空间比预期的更大，速度也比预期的慢。而想要正确性的用户，当他们使用“utf8”编码时，却无法保存像“”这样的字符。</p>
+<p>在这个不合法的字符集发布了之后，MySQL就无法修复它，因为这样需要要求所有用户重新构建他们的数据库。最终，MySQL在2010年重新发布了“utf8mb4”来支持真正的UTF-8。</p>
+<p>为什么这件事情会让人如此抓狂？</p>
+<p>因为这个问题，我整整抓狂了一个礼拜。我被“utf8”愚弄了，花了很多时间才找到这个bug。但我一定不是唯一的一个，网络上几乎所有的文章都把“utf8”当成是真正的UTF-8。<br>“utf8”只能算是个专有的字符集，它给我们带来了新问题，却一直没有得到解决。</p>
+<p>总结</p>
+<p>如果你在使用MySQL或MariaDB，不要用“utf8”编码，改用“utf8mb4”。这里（<a target="_blank" rel="noopener" href="https://mathiasbynens.be/notes/mysql-utf8mb4#utf8-to-utf8mb4%EF%BC%89%E6%8F%90%E4%BE%9B%E4%BA%86%E4%B8%80%E4%B8%AA%E6%8C%87%E5%8D%97%E7%94%A8%E4%BA%8E%E5%B0%86%E7%8E%B0%E6%9C%89%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E5%AD%97%E7%AC%A6%E7%BC%96%E7%A0%81%E4%BB%8E%E2%80%9Cutf8%E2%80%9D%E8%BD%AC%E6%88%90%E2%80%9Cutf8mb4%E2%80%9D%E3%80%82">https://mathiasbynens.be/notes/mysql-utf8mb4#utf8-to-utf8mb4）提供了一个指南用于将现有数据库的字符编码从“utf8”转成“utf8mb4”。</a></p>
+<ul>
+<li><p>编号3722，输入编号直达本文</p>
+</li>
+<li><p>输入m获取文章目录</p>
+</li>
+</ul>
+<h2 id="个人总结"><a href="#个人总结" class="headerlink" title="个人总结"></a>个人总结</h2><p>对于作者说的不要再使用utf-8，本人不完全认同，完全可以在需要的时候才使用utf8mb4（毕竟utf-8更省空间）像微信小程序，编码的坑大家应该都踩过，可是除了这个外，似乎也没遇到过什么问题。所以了解这么一个问题后，以后完全可以按需要来确定使用何种编码。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zexho994.github.io">邹志浩</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zexho994.github.io/2019/06/04/Mysql%20utf-8%20%E4%BD%BF%E7%94%A8%E8%AF%B7%E6%B3%A8%E6%84%8F/">https://zexho994.github.io/2019/06/04/Mysql%20utf-8%20%E4%BD%BF%E7%94%A8%E8%AF%B7%E6%B3%A8%E6%84%8F/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zexho994.github.io" target="_blank">Zexho</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="https://p.ipic.vip/nkaktf.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2019/06/11/SpringBoot%E8%B7%A8%E5%9F%9F%20Jsonp%E5%92%8CCors/" title="SpringBoot跨域 Jsonp和Cors"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">SpringBoot跨域 Jsonp和Cors</div></div></a></div><div class="next-post pull-right"><a href="/2019/05/30/%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F%20%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88%20%E8%BF%9E%E9%80%9A%E6%95%B0%E6%8D%AE/" title="微信小程序 本地预览 连通数据"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">微信小程序 本地预览 连通数据</div></div></a></div></nav><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹志浩</div><div class="author-info__description">芝兰生于幽谷,不因无人而不芳</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/zexho994" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:zouzhihao994@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93"><span class="toc-number">1.</span> <span class="toc-text">个人总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/03/16/%E6%9E%84%E5%BB%BA%20Antlr4%20AST%E7%9A%84%E4%B8%80%E7%82%B9%E5%BF%83%E5%BE%97/" title="构建 Antlr4 AST的一点心得">构建 Antlr4 AST的一点心得</a><time datetime="2023-03-16T03:20:21.000Z" title="发表于 2023-03-16 11:20:21">2023-03-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/09/20/%E6%95%B4%E5%90%88%20Spring%20Cloud%20OpenFeign/" title="整合 Spring Cloud OpenFeign">整合 Spring Cloud OpenFeign</a><time datetime="2022-09-20T03:20:21.000Z" title="发表于 2022-09-20 11:20:21">2022-09-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/09/19/%E5%88%9D%E6%8E%A2%20Spring%20Hateoas/" title="初探 Spring Hateoas">初探 Spring Hateoas</a><time datetime="2022-09-19T03:20:21.000Z" title="发表于 2022-09-19 11:20:21">2022-09-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/07/07/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BA%20Raft%20%E5%8D%8F%E8%AE%AE/" title="深入浅出 Raft 协议">深入浅出 Raft 协议</a><time datetime="2022-07-07T03:20:21.000Z" title="发表于 2022-07-07 11:20:21">2022-07-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/06/21/MIT6.824%20lab2%20Raft2B-%E6%97%A5%E5%BF%97%E5%90%8C%E6%AD%A5/" title="MIT6.824 lab2 Raft2B-日志同步">MIT6.824 lab2 Raft2B-日志同步</a><time datetime="2022-06-21T03:20:21.000Z" title="发表于 2022-06-21 11:20:21">2022-06-21</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2023 By 邹志浩</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: '795b5e8cc9f220c0abd0',
+      clientSecret: '1527ab5ca713e9e5688358bac83d155455670527',
+      repo: 'zexho994.github.io',
+      owner: 'zexho994',
+      admin: ['zexho994'],
+      id: '25a7b880ed849a13fa83ced4255a8ad3',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+    getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.textContent= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script>window.addEventListener('load', () => {
+  const changeContent = (content) => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g,"") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0,150) + '...'
+    }
+    return content
+  }
+
+  const findTrueUrl = (array) => {
+    Promise.all(array.map(item =>
+      fetch(item.url).then(resp => resp.json()).then(data => {
+        const urlArray = data.body.match(/(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?/ig)
+        if (data.user.login === 'utterances-bot') {
+          return urlArray.pop()
+        } else {
+          return urlArray.shift()
+        }
+      })
+    )).then(res => {
+        array = array.map((i,index)=> {
+          return {
+            ...i,
+            url: res[index]
+          }
+        })
+
+        saveToLocal.set('github-newest-comments', JSON.stringify(array), 10/(60*24))
+        generateHtml(array)
+    });
+  }
+
+  const getComment = () => {
+    fetch('https://api.github.com/repos/zexho994/zexho994.github.io/issues/comments?sort=updated&direction=desc&per_page=5&page=1',{
+      "headers": {
+        Accept: 'application/vnd.github.v3.html+json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        const githubArray = data.map(item => {
+          return {
+            'avatar': item.user.avatar_url,
+            'content': changeContent(item.body_html),
+            'nick': item.user.login,
+            'url': item.issue_url,
+            'date': item.updated_at,
+            'githubUrl': item.html_url
+          }
+        })
+        findTrueUrl(githubArray)
+      }).catch(e => {
+        const $dom = document.querySelector('#card-newest-comments .aside-list')
+        $dom.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+  }
+
+  const generateHtml = array => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class=\'aside-list-item\'>'
+
+        if (true) {
+          const name = 'src'
+          result += `<a href='${array[i].url}' class='thumbnail'><img ${name}='${array[i].avatar}' alt='${array[i].nick}'></a>`
+        }
+
+        result += `<div class='content'>
+        <a class='comment' href='${array[i].url}' title='${array[i].content}'>${array[i].content}</a>
+        <div class='name'><span>${array[i].nick} / </span><time datetime="${array[i].date}">${btf.diffDate(array[i].date, true)}</time></div>
+        </div></div>`
+      }
+    } else {
+      result += '没有评论'
+    }
+
+    let $dom = document.querySelector('#card-newest-comments .aside-list')
+    $dom.innerHTML= result
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh($dom)
+  }
+
+  const newestCommentInit = () => {
+    if (document.querySelector('#card-newest-comments .aside-list')) {
+      const data = saveToLocal.get('github-newest-comments')
+      if (data) {
+        generateHtml(JSON.parse(data))
+      } else {
+        getComment()
+      }
+    }
+  }
+
+  newestCommentInit()
+  document.addEventListener('pjax:complete', newestCommentInit)
+})</script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

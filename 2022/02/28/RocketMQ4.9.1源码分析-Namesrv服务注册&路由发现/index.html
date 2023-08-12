@@ -1,0 +1,468 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>RocketMQ4.9.1源码分析-Namesrv服务注册&amp;路由发现 | Zexho</title><meta name="author" content="邹志浩,zouzhihao994@gmail.com"><meta name="copyright" content="邹志浩"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="何为路由中心？在通常的理解中，提到消息队列，最简单的模型如下图：  很好理解，生产者只要知道消息队列的网络地址，然后发送消息到这个网络地址上。但是实际往往不是这么简单，因为消息队列一般是集群模式，再如下图，4个实例组成集群：  假如现在继续采用生产者&#x2F;消费者直接记录4个实例网络地址的方式，也是可以实现的。随着业务的发展，需要对队列进行水平扩展，要将4台实例临时扩展到6台，那么生产者和消费">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RocketMQ4.9.1源码分析-Namesrv服务注册&amp;路由发现">
+<meta property="og:url" content="https://zexho994.github.io/2022/02/28/RocketMQ4.9.1%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-Namesrv%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C&%E8%B7%AF%E7%94%B1%E5%8F%91%E7%8E%B0/index.html">
+<meta property="og:site_name" content="Zexho">
+<meta property="og:description" content="何为路由中心？在通常的理解中，提到消息队列，最简单的模型如下图：  很好理解，生产者只要知道消息队列的网络地址，然后发送消息到这个网络地址上。但是实际往往不是这么简单，因为消息队列一般是集群模式，再如下图，4个实例组成集群：  假如现在继续采用生产者&#x2F;消费者直接记录4个实例网络地址的方式，也是可以实现的。随着业务的发展，需要对队列进行水平扩展，要将4台实例临时扩展到6台，那么生产者和消费">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p.ipic.vip/nkaktf.jpg">
+<meta property="article:published_time" content="2022-02-28T03:20:21.000Z">
+<meta property="article:modified_time" content="2023-08-12T02:36:46.887Z">
+<meta property="article:author" content="邹志浩">
+<meta property="article:tag" content="RocketMQ">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p.ipic.vip/nkaktf.jpg"><link rel="shortcut icon" href="https://p.ipic.vip/nkaktf.jpg"><link rel="canonical" href="https://zexho994.github.io/2022/02/28/RocketMQ4.9.1%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-Namesrv%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C&amp;%E8%B7%AF%E7%94%B1%E5%8F%91%E7%8E%B0/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><meta/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":20,"languages":{"author":"作者: 邹志浩","link":"链接: ","source":"来源: Zexho","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: true,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'RocketMQ4.9.1源码分析-Namesrv服务注册&路由发现',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-08-12 10:36:46'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"></head><body><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="spinner-box"><div class="configure-border-1"><div class="configure-core"></div></div><div class="configure-border-2"><div class="configure-core"></div></div><div class="loading-word">加载中...</div></div></div><script>(()=>{
+  const $loadingBox = document.getElementById('loading-box')
+  const $body = document.body
+  const preloader = {
+    endLoading: () => {
+      $body.style.overflow = ''
+      $loadingBox.classList.add('loaded')
+    },
+    initLoading: () => {
+      $body.style.overflow = 'hidden'
+      $loadingBox.classList.remove('loaded')
+    }
+  }
+
+  preloader.initLoading()
+  window.addEventListener('load',() => { preloader.endLoading() })
+
+  if (true) {
+    document.addEventListener('pjax:send', () => { preloader.initLoading() })
+    document.addEventListener('pjax:complete', () => { preloader.endLoading() })
+  }
+})()</script><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a href="/" title="Zexho"><img class="site-icon" src="https://p.ipic.vip/nkaktf.jpg"/><span class="site-name">Zexho</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">RocketMQ4.9.1源码分析-Namesrv服务注册&amp;路由发现</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="fa-fw post-meta-icon far fa-calendar-alt"></i><span class="post-meta-label">发表于</span><time datetime="2022-02-28T03:20:21.000Z" title="发表于 2022-02-28 11:20:21">2022-02-28</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">2.2k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>9分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="RocketMQ4.9.1源码分析-Namesrv服务注册&amp;路由发现"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="何为路由中心？"><a href="#何为路由中心？" class="headerlink" title="何为路由中心？"></a>何为路由中心？</h1><p>在通常的理解中，提到消息队列，最简单的模型如下图：</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9f71895f47ec4236a5bea69b046546dc~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>很好理解，生产者只要知道消息队列的网络地址，然后发送消息到这个网络地址上。但是实际往往不是这么简单，因为消息队列一般是集群模式，再如下图，4个实例组成集群：</p>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/506c5a983c63464da45316ec8e8d91ae~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>假如现在继续采用生产者&#x2F;消费者直接记录4个实例网络地址的方式，也是可以实现的。随着业务的发展，需要对队列进行水平扩展，要将4台实例临时扩展到6台，那么生产者和消费者是不知道新增的两个实例网络地址的，这时只能重启，记录两个新实例的网络地址再重启。这是不是非常麻烦？针对这个问题可以思考下：</p>
+<ol>
+<li>对于集群模式的服务，有没有更好更灵活的方式去记录路由信息？</li>
+<li>当集群实例数量增加或者减少时，怎么让其他服务可以知道？并且不用做任何操作。</li>
+</ol>
+<p>这时如果我们新增一个路由中心系统，负责两件事：</p>
+<ol>
+<li>所有服务可以去路由中心上报自己的网络地址。</li>
+<li>所有服务可以去路由中心获取其他服务的网络地址。</li>
+</ol>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/5e6aa125536e4dfb83330ef43de7e9d7~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>这样我们系统有多少的业务系统，我们只要知道路由中心的地址就可以了。</p>
+<p>那么路由中心怎么感知实例数量的变化呢？最朴素的手段就是心跳，路由中心定期向所有上报的系统发送心跳包，如果心跳包没有响应则说明实例已经停止运行了，在路由记录中剔除该服务地址就可以了。</p>
+<p>其实这两个步骤都有专门名称：</p>
+<ul>
+<li>服务注册：将某个服务调用信息记录到一个公共组件中</li>
+<li>服务发现：当服务新增&#x2F;减少，要能被其他调用者自动发现。</li>
+</ul>
+<p>市面上已有的代表性产品有：zookeeper、consul、etcd。</p>
+<h1 id="RocketMQ中的Namesrv"><a href="#RocketMQ中的Namesrv" class="headerlink" title="RocketMQ中的Namesrv"></a>RocketMQ中的Namesrv</h1><p>图中展示了Namesrv的3个功能，也是核心的3个功能：</p>
+<ul>
+<li>注册broker</li>
+<li>获取路由信息</li>
+</ul>
+<!---->
+
+<ul>
+<li>定时心跳检测</li>
+</ul>
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/8c54c19fc50942ddbdd8bc47e62990b1~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<p>接下来看看rocketmq的源码是如何实现这3个功能的</p>
+<h1 id="路由元信息"><a href="#路由元信息" class="headerlink" title="路由元信息"></a>路由元信息</h1><p>namesrv作为路由信息的管理者，本质上可以这么对namesrv进行理解：<strong>保存路由信息的数据结构 + 操作数据结构的算法</strong>，路由元信息便是第一部分，所以先看看namesrv保存路由信息的数据结构是什么样子？</p>
+<p>在<code>namesrv/src/main/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManager.java</code>类下，包含了所有的路由元信息</p>
+<h3 id="topicQueueTable"><a href="#topicQueueTable" class="headerlink" title="topicQueueTable"></a>topicQueueTable</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 保存Topic和队列的信息，也叫真正的路由信息。</span></span><br><span class="line"><span class="comment"> * 一个Topic的queue可能分布在不同的broker中，也有可能分布在同一个broker中。</span></span><br><span class="line"><span class="comment"> * key:topic . val:QueueData</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;String, List&lt;QueueData&gt;&gt; topicQueueTable;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6a9e4c5596d5446c904f294c0309bc2c~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<h3 id="brokerAddrTable"><a href="#brokerAddrTable" class="headerlink" title="brokerAddrTable"></a>brokerAddrTable</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Broker基础信息，broker名称和broker信息的对应信息</span></span><br><span class="line"><span class="comment"> * key:broker name . val:broker data</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;String, BrokerData&gt; brokerAddrTable;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ddec0178522a42d791986edd1daf1756~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<h3 id="clusterAddrTable"><a href="#clusterAddrTable" class="headerlink" title="clusterAddrTable"></a>clusterAddrTable</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Broker集群信息,集群中所有Broker名称</span></span><br><span class="line"><span class="comment"> * key: cluster name . val:set&lt;broker name&gt;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;String, Set&lt;String&gt;&gt; clusterAddrTable;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2ac1bd42e6464d548a8df4725b37a8ab~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<h3 id="brokerLiveTable"><a href="#brokerLiveTable" class="headerlink" title="brokerLiveTable"></a>brokerLiveTable</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Broker状态信息，NameServer每次收心跳包都会替换该信息</span></span><br><span class="line"><span class="comment"> * key: broker addr . val:broker live info</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;String, BrokerLiveInfo&gt; brokerLiveTable;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/24bca7def87a46868684c025076f71cd~tplv-k3u1fbpfcp-zoom-1.image"></p>
+<h3 id="filterServerTable"><a href="#filterServerTable" class="headerlink" title="filterServerTable"></a>filterServerTable</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 用于类模式消息过滤</span></span><br><span class="line"><span class="comment"> * key:broker addr . val:filter server</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">final</span> HashMap&lt;String, List&lt;String&gt;&gt; filterServerTable;</span><br></pre></td></tr></table></figure>
+
+<p>知道了路由元信息的数据结构，再看看路由信息是如何保存到这些map中的以及如何查询的。</p>
+<h1 id="服务注册"><a href="#服务注册" class="headerlink" title="服务注册"></a>服务注册</h1><p>注册broker和获取路由信息是namesrv提供的API，位于<code>namesrv/src/main/java/org/apache/rocketmq/namesrv/processor/DefaultRequestProcessor.java</code>类下的<code>processRequest()</code>，根据请求的code判断请求的类型。下面包含了namesrv所有的对外接口API。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (request.getCode()) &#123;</span><br><span class="line">    <span class="keyword">case</span> RequestCode.PUT_KV_CONFIG:</span><br><span class="line">        <span class="comment">// 添加配置</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.putKVConfig(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.GET_KV_CONFIG:</span><br><span class="line">        <span class="comment">// 获取配置</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.getKVConfig(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.DELETE_KV_CONFIG:</span><br><span class="line">        <span class="comment">// 删除配置</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.deleteKVConfig(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.QUERY_DATA_VERSION:</span><br><span class="line">        <span class="keyword">return</span> queryBrokerTopicConfig(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.REGISTER_BROKER:</span><br><span class="line">        <span class="comment">// 注册broker</span></span><br><span class="line">        <span class="type">Version</span> <span class="variable">brokerVersion</span> <span class="operator">=</span> MQVersion.value2Version(request.getVersion());</span><br><span class="line">        <span class="keyword">if</span> (brokerVersion.ordinal() &gt;= MQVersion.Version.V3_0_11.ordinal()) &#123;</span><br><span class="line">            <span class="comment">// 3.0.11之后</span></span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">this</span>.registerBrokerWithFilterServer(ctx, request);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// 3.0.11之前</span></span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">this</span>.registerBroker(ctx, request);</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="keyword">case</span> RequestCode.UNREGISTER_BROKER:</span><br><span class="line">        <span class="comment">// 注销broker</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.unregisterBroker(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.GET_ROUTEINFO_BY_TOPIC:</span><br><span class="line">        <span class="comment">// 根据topic获取路由信息</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.getRouteInfoByTopic(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.GET_BROKER_CLUSTER_INFO:</span><br><span class="line">        <span class="comment">// 获取broker集群信息</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.getBrokerClusterInfo(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.WIPE_WRITE_PERM_OF_BROKER:</span><br><span class="line">        <span class="comment">// 删除Broker的写权限</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.wipeWritePermOfBroker(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.GET_ALL_TOPIC_LIST_FROM_NAMESERVER:</span><br><span class="line">        <span class="comment">// 获取全部Topic信息</span></span><br><span class="line">        <span class="keyword">return</span> getAllTopicListFromNameserver(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.DELETE_TOPIC_IN_NAMESRV:</span><br><span class="line">        <span class="comment">// 删除Topic信息</span></span><br><span class="line">        <span class="keyword">return</span> deleteTopicInNamesrv(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.GET_KVLIST_BY_NAMESPACE:</span><br><span class="line">        <span class="comment">// 获取kv列表</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.getKVListByNamespace(ctx, request);</span><br><span class="line">    <span class="keyword">case</span> RequestCode.GET_TOPICS_BY_CLUSTER:</span><br><span class="line">        <span class="comment">// 获取topic根据集群</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.getTopicsByCluster(ctx, request);</span><br><span class="line">	..</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中服务注册对应的是code是<code>REGISTER_BROKER</code>，下面看到根据版本的不同分为<code>registerBrokerWithFilterServer()</code>和<code>registerBroker()</code>，我使用的是v4.9.1，所以看看<code>registerBrokerWithFilterServer()</code>的实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> RemotingCommand <span class="title function_">registerBrokerWithFilterServer</span><span class="params">(ChannelHandlerContext ctx, RemotingCommand request)</span> <span class="keyword">throws</span> RemotingCommandException &#123;</span><br><span class="line">	...省略...        </span><br><span class="line">        </span><br><span class="line">    <span class="comment">// 注册的方法</span></span><br><span class="line">	<span class="type">RegisterBrokerResult</span> <span class="variable">result</span> <span class="operator">=</span> <span class="built_in">this</span>.namesrvController.getRouteInfoManager().registerBroker(...);</span><br><span class="line"></span><br><span class="line">    ...省略...</span><br><span class="line">    </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>核心的注册逻辑在<code>registerBroker()</code>中 ,继续看下<code>registerBroker()</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> RegisterBrokerResult <span class="title function_">registerBroker</span><span class="params">(<span class="keyword">final</span> String clusterName, <span class="keyword">final</span> String brokerAddr, <span class="keyword">final</span> String brokerName, <span class="keyword">final</span> <span class="type">long</span> brokerId, <span class="keyword">final</span> String haServerAddr, <span class="keyword">final</span> TopicConfigSerializeWrapper topicConfigWrapper, <span class="keyword">final</span> List&lt;String&gt; filterServerList, <span class="keyword">final</span> Channel channel)</span> &#123;</span><br><span class="line">    <span class="type">RegisterBrokerResult</span> <span class="variable">result</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RegisterBrokerResult</span>();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.lock.writeLock().lockInterruptibly();</span><br><span class="line"></span><br><span class="line">            <span class="comment">// step1</span></span><br><span class="line">            <span class="comment">// 根据集群名称获取 broker name 集合</span></span><br><span class="line">            Set&lt;String&gt; brokerNames = <span class="built_in">this</span>.clusterAddrTable.get(clusterName);</span><br><span class="line">            <span class="keyword">if</span> (<span class="literal">null</span> == brokerNames) &#123;</span><br><span class="line">                brokerNames = <span class="keyword">new</span> <span class="title class_">HashSet</span>&lt;&gt;();</span><br><span class="line">                <span class="built_in">this</span>.clusterAddrTable.put(clusterName, brokerNames);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// 添加broker name 到集合中</span></span><br><span class="line">            brokerNames.add(brokerName);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 是否第一次注册</span></span><br><span class="line">            <span class="type">boolean</span> <span class="variable">registerFirst</span> <span class="operator">=</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// step2</span></span><br><span class="line">            <span class="comment">// 如果 broker table 里没有数据，则表示broker为第一次注册</span></span><br><span class="line">            <span class="type">BrokerData</span> <span class="variable">brokerData</span> <span class="operator">=</span> <span class="built_in">this</span>.brokerAddrTable.get(brokerName);</span><br><span class="line">            <span class="keyword">if</span> (<span class="literal">null</span> == brokerData) &#123;</span><br><span class="line">                registerFirst = <span class="literal">true</span>;</span><br><span class="line">                brokerData = <span class="keyword">new</span> <span class="title class_">BrokerData</span>(clusterName, brokerName, <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;());</span><br><span class="line">                <span class="built_in">this</span>.brokerAddrTable.put(brokerName, brokerData);</span><br><span class="line">            &#125;</span><br><span class="line">            Map&lt;Long, String&gt; brokerAddrsMap = brokerData.getBrokerAddrs();</span><br><span class="line">            <span class="comment">//Switch slave to master: first remove &lt;1, IP:PORT&gt; in namesrv, then add &lt;0, IP:PORT&gt;</span></span><br><span class="line">            <span class="comment">//The same IP:PORT must only have one record in brokerAddrTable</span></span><br><span class="line">            brokerAddrsMap.entrySet().removeIf(item -&gt; <span class="literal">null</span> != brokerAddr &amp;&amp; brokerAddr.equals(item.getValue()) &amp;&amp; brokerId != item.getKey());</span><br><span class="line"></span><br><span class="line">            <span class="type">String</span> <span class="variable">oldAddr</span> <span class="operator">=</span> brokerAddrsMap.put(brokerId, brokerAddr);</span><br><span class="line">            registerFirst = registerFirst || (<span class="literal">null</span> == oldAddr);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// step3</span></span><br><span class="line">            <span class="comment">// 如果 topic 信息不为空，而且是 master</span></span><br><span class="line">            <span class="keyword">if</span> (<span class="literal">null</span> != topicConfigWrapper &amp;&amp; MixAll.MASTER_ID == brokerId) &#123;</span><br><span class="line">                <span class="comment">// 如果是第一次注册，或者 broker topic 信息发生变动过</span></span><br><span class="line">                <span class="keyword">if</span> (<span class="built_in">this</span>.isBrokerTopicConfigChanged(brokerAddr, topicConfigWrapper.getDataVersion()) || registerFirst) &#123;</span><br><span class="line">                    <span class="comment">// 获取 topic info 列表</span></span><br><span class="line">                    ConcurrentMap&lt;String, TopicConfig&gt; tcTable = topicConfigWrapper.getTopicConfigTable();</span><br><span class="line">                    <span class="keyword">if</span> (tcTable != <span class="literal">null</span>) &#123;</span><br><span class="line">                        <span class="keyword">for</span> (Map.Entry&lt;String, TopicConfig&gt; entry : tcTable.entrySet()) &#123;</span><br><span class="line">                            <span class="built_in">this</span>.createAndUpdateQueueData(brokerName, entry.getValue());</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// step4</span></span><br><span class="line">            <span class="type">BrokerLiveInfo</span> <span class="variable">prevBrokerLiveInfo</span> <span class="operator">=</span> <span class="built_in">this</span>.brokerLiveTable.put(brokerAddr, <span class="keyword">new</span> <span class="title class_">BrokerLiveInfo</span>(System.currentTimeMillis(), topicConfigWrapper.getDataVersion(), channel, haServerAddr));</span><br><span class="line">            <span class="keyword">if</span> (<span class="literal">null</span> == prevBrokerLiveInfo) &#123;</span><br><span class="line">                log.info(<span class="string">&quot;new broker registered, &#123;&#125; HAServer: &#123;&#125;&quot;</span>, brokerAddr, haServerAddr);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// step5</span></span><br><span class="line">            <span class="keyword">if</span> (filterServerList != <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (filterServerList.isEmpty()) &#123;</span><br><span class="line">                    <span class="built_in">this</span>.filterServerTable.remove(brokerAddr);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    <span class="built_in">this</span>.filterServerTable.put(brokerAddr, filterServerList);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 如果broker的身份是slave</span></span><br><span class="line">            <span class="keyword">if</span> (MixAll.MASTER_ID != brokerId) &#123;</span><br><span class="line">                <span class="type">String</span> <span class="variable">masterAddr</span> <span class="operator">=</span> brokerData.getBrokerAddrs().get(MixAll.MASTER_ID);</span><br><span class="line">                <span class="keyword">if</span> (masterAddr != <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="type">BrokerLiveInfo</span> <span class="variable">brokerLiveInfo</span> <span class="operator">=</span> <span class="built_in">this</span>.brokerLiveTable.get(masterAddr);</span><br><span class="line">                    <span class="keyword">if</span> (brokerLiveInfo != <span class="literal">null</span>) &#123;</span><br><span class="line">                        <span class="comment">// 在返回结果中，携带master的地址，主从同步步骤需要。</span></span><br><span class="line">                        result.setHaServerAddr(brokerLiveInfo.getHaServerAddr());</span><br><span class="line">                        result.setMasterAddr(masterAddr);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.lock.writeLock().unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        log.error(<span class="string">&quot;registerBroker Exception&quot;</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>代码注释中使用step1 ~ step5对5个不同阶段进行标记，这5个阶段的作用可以这么理解<br><img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/c3b53e34de8e48ca8e5adcbb371babcd~tplv-k3u1fbpfcp-watermark.image" alt="image.png"></p>
+<h1 id="路由剔除"><a href="#路由剔除" class="headerlink" title="路由剔除"></a>路由剔除</h1><p>namesrv要删除一个broker的路由信息的只有一个：这个broker目前不能正常提供服务了。这也可以分为两种情况</p>
+<ol>
+<li>broker正常停止。</li>
+<li>broker发生异常。</li>
+</ol>
+<h2 id="Broker-正常停止"><a href="#Broker-正常停止" class="headerlink" title="Broker 正常停止"></a>Broker 正常停止</h2><p>broker在停止的时候会给namesrv发送一个<code>unregisterBroker</code>类型的消息，发送代码部分在<code>broker/src/main/java/org/apache/rocketmq/broker/out/BrokerOuterAPI.java</code>类的<code>unregisterBrokerAll()</code>，namesrv处理这个消息的入口上文服务注册部分提到过，代码的逻辑很直白，就是从<code>topicQueueTable</code> 、<code>brokerAddrTable</code> 、<code>brokerLiveTable</code> 、<code>filterServerTable</code> 删除与该Broker相关的信息。</p>
+<h2 id="Broker-异常"><a href="#Broker-异常" class="headerlink" title="Broker 异常"></a>Broker 异常</h2><p>broker异常的时候，肯定是无法主动向namesrv发送注销消息的，所以需要namesrv主动去发现哪些异常的broker。按照这个思路，可以想到两种实现手段：</p>
+<p><strong>方案一：</strong> namesrv启动一个定时任务，然后向所有broker发送心跳请求，无法响应的broker可以怀疑是发生了异常了。</p>
+<p><strong>方案二：</strong> 记录broker向namesrv最后发送心跳消息的时间，namesrv启动定时任务，判断每个最后心跳时间与当前的时间是否超时，超时说明broker异常导致无法发送心跳包</p>
+<p>RocketMQ的设计思路和方案二类似。</p>
+<h3 id="启动定时任务"><a href="#启动定时任务" class="headerlink" title="启动定时任务"></a>启动定时任务</h3><p><code>namesrv/src/main/java/org/apache/rocketmq/namesrv/NamesrvController#initailize()</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">initialize</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">//...略</span></span><br><span class="line">    </span><br><span class="line">    <span class="built_in">this</span>.scheduledExecutorService.scheduleAtFixedRate(NamesrvController.<span class="built_in">this</span>.routeInfoManager::scanNotActiveBroker, <span class="number">5</span>, <span class="number">10</span>, TimeUnit.SECONDS);</span><br><span class="line">    </span><br><span class="line">	<span class="comment">//... 略</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>namesrv/src/main/java/org/apache/rocketmq/namesrv/routeinfo/RouteInfoManager#scanNotActiveBroker()</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">scanNotActiveBroker</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="comment">// 从存活列表里获取broker数据</span></span><br><span class="line">    Iterator&lt;Entry&lt;String, BrokerLiveInfo&gt;&gt; it = <span class="built_in">this</span>.brokerLiveTable.entrySet().iterator();</span><br><span class="line">    <span class="keyword">while</span> (it.hasNext()) &#123;</span><br><span class="line">        Entry&lt;String, BrokerLiveInfo&gt; next = it.next();</span><br><span class="line">        <span class="type">long</span> <span class="variable">last</span> <span class="operator">=</span> next.getValue().getLastUpdateTimestamp();</span><br><span class="line">        <span class="comment">// 判断消息发送间隔</span></span><br><span class="line">        <span class="keyword">if</span> ((last + BROKER_CHANNEL_EXPIRED_TIME) &lt; System.currentTimeMillis()) &#123;</span><br><span class="line">            RemotingUtil.closeChannel(next.getValue().getChannel());</span><br><span class="line">			<span class="comment">// 移除该broker信息</span></span><br><span class="line">            it.remove();</span><br><span class="line">            log.warn(<span class="string">&quot;The broker channel expired, &#123;&#125; &#123;&#125;ms&quot;</span>, next.getKey(), BROKER_CHANNEL_EXPIRED_TIME);</span><br><span class="line">            <span class="built_in">this</span>.onChannelDestroy(next.getKey(), next.getValue().getChannel());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://zexho994.github.io">邹志浩</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zexho994.github.io/2022/02/28/RocketMQ4.9.1%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-Namesrv%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C&amp;%E8%B7%AF%E7%94%B1%E5%8F%91%E7%8E%B0/">https://zexho994.github.io/2022/02/28/RocketMQ4.9.1%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-Namesrv%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C&amp;%E8%B7%AF%E7%94%B1%E5%8F%91%E7%8E%B0/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zexho994.github.io" target="_blank">Zexho</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/RocketMQ/">RocketMQ</a></div><div class="post_share"><div class="social-share" data-image="https://p.ipic.vip/nkaktf.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2022/03/14/%E5%9F%BA%E4%BA%8E%20Cglib%20%E5%92%8C%20JDK%20%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86%E5%AE%9E%E7%8E%B0%20AOP/" title="基于 Cglib 和 JDK 动态代理实现 AOP"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">基于 Cglib 和 JDK 动态代理实现 AOP</div></div></a></div><div class="next-post pull-right"><a href="/2022/01/25/RocketMQ4.9.1%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%20%E9%AB%98%E5%8F%AF%E7%94%A8%20%E4%B8%BB%E4%BB%8ESlave%E4%B8%8A%E6%8A%A5%E4%B8%8E%E6%B6%88%E6%81%AF%E5%A4%84%E7%90%86/" title="RocketMQ4.9.1源码解析 高可用 主从Slave上报与消息处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">RocketMQ4.9.1源码解析 高可用 主从Slave上报与消息处理</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/01/07/RocketMQ4.9.1%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%20%E4%BA%8B%E5%8A%A1broker%E5%AE%9A%E6%97%B6%E5%9B%9E%E6%9F%A5/" title="RocketMQ4.9.1源码分析 事务broker定时回查"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-01-07</div><div class="title">RocketMQ4.9.1源码分析 事务broker定时回查</div></div></a></div><div><a href="/2022/01/11/RocketMQ4.9.1%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%20%E4%BA%8B%E5%8A%A1Half%E5%8D%8A%E6%B6%88%E6%81%AF%E5%A4%84%E7%90%86/" title="RocketMQ4.9.1源码分析 事务Half半消息处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-01-11</div><div class="title">RocketMQ4.9.1源码分析 事务Half半消息处理</div></div></a></div><div><a href="/2022/01/24/RocketMQ4.9.1%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%20%E9%AB%98%E5%8F%AF%E7%94%A8%20Master%E8%AF%BB%E5%86%99%E5%A4%84%E7%90%86/" title="RocketMQ4.9.1源码分析 高可用 Master读写处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-01-24</div><div class="title">RocketMQ4.9.1源码分析 高可用 Master读写处理</div></div></a></div><div><a href="/2022/01/25/RocketMQ4.9.1%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%20%E9%AB%98%E5%8F%AF%E7%94%A8%20%E4%B8%BB%E4%BB%8ESlave%E4%B8%8A%E6%8A%A5%E4%B8%8E%E6%B6%88%E6%81%AF%E5%A4%84%E7%90%86/" title="RocketMQ4.9.1源码解析 高可用 主从Slave上报与消息处理"><div class="cover" style="background: var(--default-bg-color)"></div><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-01-25</div><div class="title">RocketMQ4.9.1源码解析 高可用 主从Slave上报与消息处理</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://p.ipic.vip/nkaktf.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">邹志浩</div><div class="author-info__description">芝兰生于幽谷,不因无人而不芳</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">38</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">5</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/zexho994" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:zouzhihao994@gmail.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BD%95%E4%B8%BA%E8%B7%AF%E7%94%B1%E4%B8%AD%E5%BF%83%EF%BC%9F"><span class="toc-number">1.</span> <span class="toc-text">何为路由中心？</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#RocketMQ%E4%B8%AD%E7%9A%84Namesrv"><span class="toc-number">2.</span> <span class="toc-text">RocketMQ中的Namesrv</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E5%85%83%E4%BF%A1%E6%81%AF"><span class="toc-number">3.</span> <span class="toc-text">路由元信息</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#topicQueueTable"><span class="toc-number">3.0.1.</span> <span class="toc-text">topicQueueTable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#brokerAddrTable"><span class="toc-number">3.0.2.</span> <span class="toc-text">brokerAddrTable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#clusterAddrTable"><span class="toc-number">3.0.3.</span> <span class="toc-text">clusterAddrTable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#brokerLiveTable"><span class="toc-number">3.0.4.</span> <span class="toc-text">brokerLiveTable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#filterServerTable"><span class="toc-number">3.0.5.</span> <span class="toc-text">filterServerTable</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C"><span class="toc-number">4.</span> <span class="toc-text">服务注册</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%B7%AF%E7%94%B1%E5%89%94%E9%99%A4"><span class="toc-number">5.</span> <span class="toc-text">路由剔除</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#Broker-%E6%AD%A3%E5%B8%B8%E5%81%9C%E6%AD%A2"><span class="toc-number">5.1.</span> <span class="toc-text">Broker 正常停止</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Broker-%E5%BC%82%E5%B8%B8"><span class="toc-number">5.2.</span> <span class="toc-text">Broker 异常</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%AE%9A%E6%97%B6%E4%BB%BB%E5%8A%A1"><span class="toc-number">5.2.1.</span> <span class="toc-text">启动定时任务</span></a></li></ol></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2023/03/16/%E6%9E%84%E5%BB%BA%20Antlr4%20AST%E7%9A%84%E4%B8%80%E7%82%B9%E5%BF%83%E5%BE%97/" title="构建 Antlr4 AST的一点心得">构建 Antlr4 AST的一点心得</a><time datetime="2023-03-16T03:20:21.000Z" title="发表于 2023-03-16 11:20:21">2023-03-16</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/09/20/%E6%95%B4%E5%90%88%20Spring%20Cloud%20OpenFeign/" title="整合 Spring Cloud OpenFeign">整合 Spring Cloud OpenFeign</a><time datetime="2022-09-20T03:20:21.000Z" title="发表于 2022-09-20 11:20:21">2022-09-20</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/09/19/%E5%88%9D%E6%8E%A2%20Spring%20Hateoas/" title="初探 Spring Hateoas">初探 Spring Hateoas</a><time datetime="2022-09-19T03:20:21.000Z" title="发表于 2022-09-19 11:20:21">2022-09-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/07/07/%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BA%20Raft%20%E5%8D%8F%E8%AE%AE/" title="深入浅出 Raft 协议">深入浅出 Raft 协议</a><time datetime="2022-07-07T03:20:21.000Z" title="发表于 2022-07-07 11:20:21">2022-07-07</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2022/06/21/MIT6.824%20lab2%20Raft2B-%E6%97%A5%E5%BF%97%E5%90%8C%E6%AD%A5/" title="MIT6.824 lab2 Raft2B-日志同步">MIT6.824 lab2 Raft2B-日志同步</a><time datetime="2022-06-21T03:20:21.000Z" title="发表于 2022-06-21 11:20:21">2022-06-21</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2023 By 邹志浩</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: '795b5e8cc9f220c0abd0',
+      clientSecret: '1527ab5ca713e9e5688358bac83d155455670527',
+      repo: 'zexho994.github.io',
+      owner: 'zexho994',
+      admin: ['zexho994'],
+      id: '76f6abb85356a1d6298734253a351424',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+    getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.textContent= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !true) {
+  if (true) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script>window.addEventListener('load', () => {
+  const changeContent = (content) => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g,"") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0,150) + '...'
+    }
+    return content
+  }
+
+  const findTrueUrl = (array) => {
+    Promise.all(array.map(item =>
+      fetch(item.url).then(resp => resp.json()).then(data => {
+        const urlArray = data.body.match(/(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?/ig)
+        if (data.user.login === 'utterances-bot') {
+          return urlArray.pop()
+        } else {
+          return urlArray.shift()
+        }
+      })
+    )).then(res => {
+        array = array.map((i,index)=> {
+          return {
+            ...i,
+            url: res[index]
+          }
+        })
+
+        saveToLocal.set('github-newest-comments', JSON.stringify(array), 10/(60*24))
+        generateHtml(array)
+    });
+  }
+
+  const getComment = () => {
+    fetch('https://api.github.com/repos/zexho994/zexho994.github.io/issues/comments?sort=updated&direction=desc&per_page=5&page=1',{
+      "headers": {
+        Accept: 'application/vnd.github.v3.html+json'
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        const githubArray = data.map(item => {
+          return {
+            'avatar': item.user.avatar_url,
+            'content': changeContent(item.body_html),
+            'nick': item.user.login,
+            'url': item.issue_url,
+            'date': item.updated_at,
+            'githubUrl': item.html_url
+          }
+        })
+        findTrueUrl(githubArray)
+      }).catch(e => {
+        const $dom = document.querySelector('#card-newest-comments .aside-list')
+        $dom.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+  }
+
+  const generateHtml = array => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class=\'aside-list-item\'>'
+
+        if (true) {
+          const name = 'src'
+          result += `<a href='${array[i].url}' class='thumbnail'><img ${name}='${array[i].avatar}' alt='${array[i].nick}'></a>`
+        }
+
+        result += `<div class='content'>
+        <a class='comment' href='${array[i].url}' title='${array[i].content}'>${array[i].content}</a>
+        <div class='name'><span>${array[i].nick} / </span><time datetime="${array[i].date}">${btf.diffDate(array[i].date, true)}</time></div>
+        </div></div>`
+      }
+    } else {
+      result += '没有评论'
+    }
+
+    let $dom = document.querySelector('#card-newest-comments .aside-list')
+    $dom.innerHTML= result
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh($dom)
+  }
+
+  const newestCommentInit = () => {
+    if (document.querySelector('#card-newest-comments .aside-list')) {
+      const data = saveToLocal.get('github-newest-comments')
+      if (data) {
+        generateHtml(JSON.parse(data))
+      } else {
+        getComment()
+      }
+    }
+  }
+
+  newestCommentInit()
+  document.addEventListener('pjax:complete', newestCommentInit)
+})</script><canvas class="fireworks" mobile="false"></canvas><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/fireworks.min.js"></script><script defer="defer" id="fluttering_ribbon" mobile="false" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-fluttering-ribbon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: false,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', '', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
